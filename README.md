@@ -31,6 +31,14 @@ npm run start:dev
 
 Server runs on `http://localhost:3000` by default.
 
+## Production
+
+Production deployment files are included:
+
+- [ecosystem.config.cjs](/Users/utepovnauryzbek/Developer/bosoryn/bosoryn-backend/ecosystem.config.cjs)
+- [DEPLOY.md](/Users/utepovnauryzbek/Developer/bosoryn/bosoryn-backend/DEPLOY.md)
+- [deploy/nginx/bosoryn-backend.conf.example](/Users/utepovnauryzbek/Developer/bosoryn/bosoryn-backend/deploy/nginx/bosoryn-backend.conf.example)
+
 ## Database env
 
 - `DATABASE_URL`
