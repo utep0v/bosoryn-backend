@@ -1,0 +1,436 @@
+{
+  "info": {
+    "_postman_id": "577a3175-8363-46c3-a8f8-5d97af6f7396",
+    "name": "Bosoryn Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Full Postman collection for the Bosoryn NestJS backend with admin auth, admin CRUD, dashboard, and public APIs."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "admin_token", "value": "" },
+    { "key": "region_id", "value": "0fa8db4a-bd4c-48fb-aac7-4f8c6f9e17f7" },
+    { "key": "school_id", "value": "cdff712c-641c-4d79-a440-9d21caf68d67" },
+    { "key": "subject_id", "value": "9f1fb0a9-95d2-430b-a9a7-53f65f0e0a4f" },
+    { "key": "vacancy_id", "value": "1fcc6cae-4f7e-4f64-bfbe-2805d86c7943" },
+    { "key": "application_id", "value": "844fbc6a-7ca2-45e8-a985-f2626d50fb42" },
+    { "key": "pairing_phone", "value": "77070000000" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login success', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('admin_token', json.accessToken);",
+                  "  pm.environment.set('admin_token', json.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin12345\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/admin/login"
+          }
+        },
+        {
+          "name": "Admin Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/auth/admin/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Root Info",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/"
+          }
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/dashboard"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Regions",
+      "item": [
+        {
+          "name": "List Regions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/regions"
+          }
+        },
+        {
+          "name": "Create Region",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameKz\": \"Жаңа аймақ\",\n  \"nameRu\": \"Новый регион\"\n}"
+            },
+            "url": "{{baseUrl}}/regions"
+          }
+        },
+        {
+          "name": "Update Region",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameKz\": \"Абай ауданы - Абай облысы (жаңартылды)\",\n  \"nameRu\": \"Абайский район - Абайская область (обновлено)\"\n}"
+            },
+            "url": "{{baseUrl}}/regions/{{region_id}}"
+          }
+        },
+        {
+          "name": "Delete Region",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/regions/{{region_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schools",
+      "item": [
+        {
+          "name": "List Schools",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/schools"
+          }
+        },
+        {
+          "name": "List Schools By Region",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/schools?regionId={{region_id}}"
+          }
+        },
+        {
+          "name": "Create School",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Новая школа\",\n  \"email\": \"new-school@example.com\",\n  \"phone\": \"+77070001122\",\n  \"regionId\": \"{{region_id}}\"\n}"
+            },
+            "url": "{{baseUrl}}/schools"
+          }
+        },
+        {
+          "name": "Update School",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Абай ауданы білім бөлімі\",\n  \"email\": \"795_032@ayagoz-roo.kz\",\n  \"phone\": \"+77070000001\",\n  \"regionId\": \"{{region_id}}\"\n}"
+            },
+            "url": "{{baseUrl}}/schools/{{school_id}}"
+          }
+        },
+        {
+          "name": "Delete School",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/schools/{{school_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "List Subjects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/subjects"
+          }
+        },
+        {
+          "name": "Create Subject",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameKz\": \"Информатика\",\n  \"nameRu\": \"Информатика\"\n}"
+            },
+            "url": "{{baseUrl}}/subjects"
+          }
+        },
+        {
+          "name": "Update Subject",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameKz\": \"Ағылшын тілі\",\n  \"nameRu\": \"Английский язык\"\n}"
+            },
+            "url": "{{baseUrl}}/subjects/{{subject_id}}"
+          }
+        },
+        {
+          "name": "Delete Subject",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/subjects/{{subject_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vacancies",
+      "item": [
+        {
+          "name": "List Vacancies",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/vacancies"
+          }
+        },
+        {
+          "name": "Get Vacancy By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/vacancies/{{vacancy_id}}"
+          }
+        },
+        {
+          "name": "Create Vacancy",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"regionId\": \"{{region_id}}\",\n  \"schoolId\": \"{{school_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"teachingLanguage\": \"kz\",\n  \"graduationYear\": 2026,\n  \"status\": \"open\"\n}"
+            },
+            "url": "{{baseUrl}}/vacancies"
+          }
+        },
+        {
+          "name": "Update Vacancy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"regionId\": \"{{region_id}}\",\n  \"schoolId\": \"{{school_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"teachingLanguage\": \"kz\",\n  \"graduationYear\": 2027,\n  \"status\": \"open\"\n}"
+            },
+            "url": "{{baseUrl}}/vacancies/{{vacancy_id}}"
+          }
+        },
+        {
+          "name": "Delete Vacancy",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/vacancies/{{vacancy_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "List Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/applications"
+          }
+        },
+        {
+          "name": "Delete Application",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/applications/{{application_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "WhatsApp",
+      "item": [
+        {
+          "name": "WhatsApp Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/whatsapp/status"
+          }
+        },
+        {
+          "name": "Request Pairing Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{pairing_phone}}\"\n}"
+            },
+            "url": "{{baseUrl}}/whatsapp/pairing-code"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Public Vacancy Filters RU",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/vacancies/filters?lang=ru"
+          }
+        },
+        {
+          "name": "Public Vacancy Filters KZ",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/vacancies/filters?lang=kz"
+          }
+        },
+        {
+          "name": "Public Vacancy List",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/vacancies?regionId={{region_id}}&schoolId={{school_id}}&subjectId={{subject_id}}&graduationYear=2026&lang=ru"
+          }
+        },
+        {
+          "name": "Public Create Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vacancyId\": \"{{vacancy_id}}\",\n  \"fullName\": \"Тестовый кандидат\",\n  \"phone\": \"+77015554433\"\n}"
+            },
+            "url": "{{baseUrl}}/public/applications"
+          }
+        }
+      ]
+    }
+  ]
+}
