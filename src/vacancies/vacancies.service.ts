@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
+  requireBoolean,
   requirePositiveInt,
   requireText,
   requireUuid,
@@ -33,6 +34,7 @@ interface SaveVacancyDto {
   regionId: string;
   schoolId: string;
   subjectId: string;
+  isPedagogical: boolean;
   teachingLanguage: TeachingLanguage;
   graduationYear: number;
   status: VacancyStatus;
@@ -218,6 +220,7 @@ export class VacanciesService {
       regionId,
       schoolId,
       subjectId,
+      isPedagogical: requireBoolean(payload.isPedagogical, 'isPedagogical'),
       teachingLanguage: normalizeLanguage(payload.teachingLanguage),
       graduationYear: requirePositiveInt(
         payload.graduationYear,
@@ -277,6 +280,13 @@ export class VacanciesService {
     vacancy.regionId = nextRegionId;
     vacancy.schoolId = nextSchoolId;
     vacancy.subjectId = nextSubjectId;
+
+    if (payload.isPedagogical !== undefined) {
+      vacancy.isPedagogical = requireBoolean(
+        payload.isPedagogical,
+        'isPedagogical',
+      );
+    }
 
     if (payload.teachingLanguage !== undefined) {
       vacancy.teachingLanguage = normalizeLanguage(payload.teachingLanguage);

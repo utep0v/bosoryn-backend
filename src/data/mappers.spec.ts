@@ -9,6 +9,7 @@ describe('data mappers', () => {
       regionId: '11111111-1111-4111-8111-111111111111',
       schoolId: '22222222-2222-4222-8222-222222222222',
       subjectId: '33333333-3333-4333-8333-333333333333',
+      isPedagogical: true,
       teachingLanguage: 'kz',
       graduationYear: 2025,
       status: 'open',
@@ -40,6 +41,7 @@ describe('data mappers', () => {
     expect(mapped.regionName).toBe('город Алматы');
     expect(mapped.schoolPhone).toBe('+77070000003');
     expect(mapped.subjectName).toBe('Математика');
+    expect(mapped.isPedagogical).toBe(true);
     expect(mapped.status).toBe('open');
   });
 
@@ -49,6 +51,10 @@ describe('data mappers', () => {
       vacancyId: '44444444-4444-4444-8444-444444444444',
       fullName: 'Тестовый Кандидат',
       phone: '+77015554433',
+      attachmentOriginalName: 'portfolio.pdf',
+      attachmentStoredName: 'abc.pdf',
+      attachmentMimeType: 'application/pdf',
+      attachmentPath: '/tmp/abc.pdf',
       createdAt: new Date('2026-02-24T18:05:00.000Z'),
       emailStatus: 'sent',
       whatsappStatus: 'pending',
@@ -60,6 +66,7 @@ describe('data mappers', () => {
         regionId: '11111111-1111-4111-8111-111111111111',
         schoolId: '22222222-2222-4222-8222-222222222222',
         subjectId: '33333333-3333-4333-8333-333333333333',
+        isPedagogical: true,
         teachingLanguage: 'kz',
         graduationYear: 2025,
         status: 'open',
@@ -91,6 +98,8 @@ describe('data mappers', () => {
 
     expect(mapped.fullName).toBe('Тестовый Кандидат');
     expect(mapped.schoolEmail).toBe('school@example.com');
+    expect(mapped.isPedagogical).toBe(true);
+    expect(mapped.attachment.hasFile).toBe(true);
     expect(mapped.notificationStatus.email).toBe('sent');
     expect(mapped.notificationStatus.whatsapp).toBe('pending');
   });

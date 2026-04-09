@@ -38,6 +38,7 @@ export function mapVacancyEntity(
     schoolPhone: vacancy.school.phone,
     subjectId: vacancy.subjectId,
     subjectName: subjectName(vacancy.subject, lang),
+    isPedagogical: vacancy.isPedagogical,
     teachingLanguage: vacancy.teachingLanguage as 'kz' | 'ru',
     graduationYear: vacancy.graduationYear,
     status: vacancy.status as 'open' | 'closed',
@@ -76,9 +77,18 @@ export function mapApplicationEntity(
     schoolPhone: vacancyView.schoolPhone,
     subjectId: vacancyView.subjectId,
     subjectName: vacancyView.subjectName,
+    isPedagogical: vacancyView.isPedagogical,
     teachingLanguage: vacancyView.teachingLanguage,
     graduationYear: vacancyView.graduationYear,
     status: vacancyView.status,
+    attachment: {
+      hasFile: Boolean(application.attachmentStoredName),
+      originalName: application.attachmentOriginalName,
+      mimeType: application.attachmentMimeType,
+      downloadUrl: application.attachmentStoredName
+        ? `/applications/${application.id}/attachment`
+        : null,
+    },
     notificationStatus: {
       email: application.emailStatus as
         | 'pending'

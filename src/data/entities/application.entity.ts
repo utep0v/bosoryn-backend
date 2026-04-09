@@ -21,6 +21,18 @@ export class ApplicationEntity {
   @Column()
   phone: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  attachmentOriginalName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  attachmentStoredName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  attachmentMimeType: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  attachmentPath: string | null;
+
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

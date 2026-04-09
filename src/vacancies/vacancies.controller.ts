@@ -53,6 +53,7 @@ export class VacanciesController {
       regionId: string;
       schoolId: string;
       subjectId: string;
+      isPedagogical: boolean;
       teachingLanguage: TeachingLanguage;
       graduationYear: number;
       status: VacancyStatus;
@@ -69,6 +70,7 @@ export class VacanciesController {
       regionId?: string;
       schoolId?: string;
       subjectId?: string;
+      isPedagogical?: boolean;
       teachingLanguage?: TeachingLanguage;
       graduationYear?: number;
       status?: VacancyStatus;

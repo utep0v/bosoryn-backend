@@ -85,6 +85,50 @@ export function requireUuid(value: unknown, fieldName: string) {
   return text;
 }
 
+export function requireBoolean(value: unknown, fieldName: string) {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+
+    if (normalized === 'true') {
+      return true;
+    }
+
+    if (normalized === 'false') {
+      return false;
+    }
+  }
+
+  throw new BadRequestException(`${fieldName} must be a boolean`);
+}
+
+export function toOptionalBoolean(value: unknown) {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+
+    if (normalized === 'true') {
+      return true;
+    }
+
+    if (normalized === 'false') {
+      return false;
+    }
+  }
+
+  return undefined;
+}
+
 export function toOptionalText(value: unknown) {
   if (value === undefined || value === null || value === '') {
     return undefined;

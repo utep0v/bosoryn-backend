@@ -94,6 +94,16 @@
             ],
             "url": "{{baseUrl}}/dashboard"
           }
+        },
+        {
+          "name": "Get Dashboard Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/dashboard/analytics"
+          }
         }
       ]
     },
@@ -305,7 +315,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"regionId\": \"{{region_id}}\",\n  \"schoolId\": \"{{school_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"teachingLanguage\": \"kz\",\n  \"graduationYear\": 2026,\n  \"status\": \"open\"\n}"
+              "raw": "{\n  \"regionId\": \"{{region_id}}\",\n  \"schoolId\": \"{{school_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"isPedagogical\": true,\n  \"teachingLanguage\": \"kz\",\n  \"graduationYear\": 2026,\n  \"status\": \"open\"\n}"
             },
             "url": "{{baseUrl}}/vacancies"
           }
@@ -320,7 +330,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"regionId\": \"{{region_id}}\",\n  \"schoolId\": \"{{school_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"teachingLanguage\": \"kz\",\n  \"graduationYear\": 2027,\n  \"status\": \"open\"\n}"
+              "raw": "{\n  \"regionId\": \"{{region_id}}\",\n  \"schoolId\": \"{{school_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"isPedagogical\": false,\n  \"teachingLanguage\": \"kz\",\n  \"graduationYear\": 2027,\n  \"status\": \"open\"\n}"
             },
             "url": "{{baseUrl}}/vacancies/{{vacancy_id}}"
           }
@@ -348,6 +358,36 @@
               { "key": "Authorization", "value": "Bearer {{admin_token}}" }
             ],
             "url": "{{baseUrl}}/applications"
+          }
+        },
+        {
+          "name": "Export Applications Excel",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/applications/export?graduationYear=2026"
+          }
+        },
+        {
+          "name": "Download Referral Document",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/applications/{{application_id}}/referral-document"
+          }
+        },
+        {
+          "name": "Download Application Attachment",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/applications/{{application_id}}/attachment"
           }
         },
         {
@@ -420,12 +460,14 @@
           "name": "Public Create Application",
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"vacancyId\": \"{{vacancy_id}}\",\n  \"fullName\": \"Тестовый кандидат\",\n  \"phone\": \"+77015554433\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                { "key": "vacancyId", "value": "{{vacancy_id}}", "type": "text" },
+                { "key": "fullName", "value": "Тестовый кандидат", "type": "text" },
+                { "key": "phone", "value": "+77015554433", "type": "text" },
+                { "key": "attachment", "type": "file", "src": "" }
+              ]
             },
             "url": "{{baseUrl}}/public/applications"
           }

@@ -59,4 +59,93 @@ export class DashboardService {
       ),
     };
   }
+
+  async getAnalytics() {
+    const [byRegion, bySubject, byGraduationYear, bySchool] = await Promise.all(
+      [
+        this.applicationsRepository
+          .createQueryBuilder('application')
+          .innerJoin('application.vacancy', 'vacancy')
+          .innerJoin('vacancy.region', 'region')
+          .select('region.id', 'id')
+          .addSelect('region.nameRu', 'label')
+          .addSelect('COUNT(application.id)', 'applicationsCount')
+          .groupBy('region.id')
+          .addGroupBy('region.nameRu')
+          .orderBy('COUNT(application.id)', 'DESC')
+          .getRawMany<{
+            id: string;
+            label: string;
+            applicationsCount: string;
+          }>(),
+        this.applicationsRepository
+          .createQueryBuilder('application')
+          .innerJoin('application.vacancy', 'vacancy')
+          .innerJoin('vacancy.subject', 'subject')
+          .select('subject.id', 'id')
+          .addSelect('subject.nameRu', 'label')
+          .addSelect('COUNT(application.id)', 'applicationsCount')
+          .groupBy('subject.id')
+          .addGroupBy('subject.nameRu')
+          .orderBy('COUNT(application.id)', 'DESC')
+          .getRawMany<{
+            id: string;
+            label: string;
+            applicationsCount: string;
+          }>(),
+        this.applicationsRepository
+          .createQueryBuilder('application')
+          .innerJoin('application.vacancy', 'vacancy')
+          .select('vacancy.graduationYear', 'year')
+          .addSelect('COUNT(application.id)', 'applicationsCount')
+          .groupBy('vacancy.graduationYear')
+          .orderBy('vacancy.graduationYear', 'ASC')
+          .getRawMany<{
+            year: string;
+            applicationsCount: string;
+          }>(),
+        this.applicationsRepository
+          .createQueryBuilder('application')
+          .innerJoin('application.vacancy', 'vacancy')
+          .innerJoin('vacancy.school', 'school')
+          .select('school.id', 'id')
+          .addSelect('school.name', 'label')
+          .addSelect('COUNT(application.id)', 'applicationsCount')
+          .groupBy('school.id')
+          .addGroupBy('school.name')
+          .orderBy('COUNT(application.id)', 'DESC')
+          .getRawMany<{
+            id: string;
+            label: string;
+            applicationsCount: string;
+          }>(),
+      ],
+    );
+
+    return {
+      totalApplications: byRegion.reduce(
+        (sum, item) => sum + Number(item.applicationsCount),
+        0,
+      ),
+      byRegion: byRegion.map((item) => ({
+        id: item.id,
+        label: item.label,
+        applicationsCount: Number(item.applicationsCount),
+      })),
+      bySubject: bySubject.map((item) => ({
+        id: item.id,
+        label: item.label,
+        applicationsCount: Number(item.applicationsCount),
+      })),
+      byGraduationYear: byGraduationYear.map((item) => ({
+        year: Number(item.year),
+        applicationsCount: Number(item.applicationsCount),
+      })),
+      topSchools: bySchool.map((item) => ({
+        id: item.id,
+        label: item.label,
+        applicationsCount: Number(item.applicationsCount),
+      })),
+    };
+  }
 }

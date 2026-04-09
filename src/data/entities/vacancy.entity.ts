@@ -25,6 +25,9 @@ export class VacancyEntity {
   @Column('uuid')
   subjectId: string;
 
+  @Column({ default: false })
+  isPedagogical: boolean;
+
   @Column({ type: 'varchar' })
   teachingLanguage: string;
 

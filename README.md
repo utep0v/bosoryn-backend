@@ -8,6 +8,10 @@
 - Public vacancy list for the main site
 - Public application submission with `fullName` and `phone`
 - Dashboard summary with counts and recent applications
+- Admin analytics for applications by region, subject, graduation year, and school
+- Excel export for applications
+- Filled referral `.docx` export for a selected application
+- Conditional attachment upload for pedagogical vacancies
 - School model extended with both `email` and `phone`
 - Email notification pipeline prepared through SMTP
 - WhatsApp notification pipeline connected through `Baileys`
@@ -52,6 +56,7 @@ Server runs on `http://localhost:3000` by default.
 - `WHATSAPP_PAIRING_PHONE_NUMBER`
 - `WHATSAPP_PRINT_QR`
 - `WHATSAPP_LOG_LEVEL`
+- `APPLICATION_UPLOAD_DIR`
 
 ## API overview
 
@@ -68,17 +73,22 @@ Server runs on `http://localhost:3000` by default.
 - `GET|POST|PATCH|DELETE /subjects`
 - `GET|POST|PATCH|DELETE /vacancies`
 - `GET|DELETE /applications`
+- `GET /applications/export`
+- `GET /applications/:id/referral-document`
+- `GET /applications/:id/attachment`
 - `GET /dashboard`
+- `GET /dashboard/analytics`
 
 ## Public application payload
 
-```json
-{
-  "vacancyId": "1fcc6cae-4f7e-4f64-bfbe-2805d86c7943",
-  "fullName": "Токтасын Аяжан",
-  "phone": "+77015554433"
-}
-```
+Use `multipart/form-data`:
+
+- `vacancyId`
+- `fullName`
+- `phone`
+- `attachment`
+
+`attachment` is required only when `vacancy.isPedagogical === true`.
 
 ## Email behavior
 
@@ -115,7 +125,6 @@ Message body includes:
 - region
 - subject
 - teaching language
-- hours per week
 - graduation year
 - candidate full name
 - candidate phone

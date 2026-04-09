@@ -30,6 +30,7 @@ export interface Vacancy {
   regionId: string;
   schoolId: string;
   subjectId: string;
+  isPedagogical: boolean;
   teachingLanguage: TeachingLanguage;
   graduationYear: number;
   status: VacancyStatus;
@@ -49,6 +50,10 @@ export interface Application {
   vacancyId: string;
   fullName: string;
   phone: string;
+  attachmentOriginalName: string | null;
+  attachmentStoredName: string | null;
+  attachmentMimeType: string | null;
+  attachmentPath: string | null;
   createdAt: string;
   notificationStatus: ApplicationNotificationStatus;
 }
@@ -63,6 +68,7 @@ export interface VacancyView {
   schoolPhone: string;
   subjectId: string;
   subjectName: string;
+  isPedagogical: boolean;
   teachingLanguage: TeachingLanguage;
   graduationYear: number;
   status: VacancyStatus;
@@ -83,8 +89,15 @@ export interface ApplicationView {
   schoolPhone: string;
   subjectId: string;
   subjectName: string;
+  isPedagogical: boolean;
   teachingLanguage: TeachingLanguage;
   graduationYear: number;
   status: VacancyStatus;
+  attachment: {
+    hasFile: boolean;
+    originalName: string | null;
+    mimeType: string | null;
+    downloadUrl: string | null;
+  };
   notificationStatus: ApplicationNotificationStatus;
 }
