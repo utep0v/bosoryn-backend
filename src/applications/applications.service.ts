@@ -165,7 +165,9 @@ export class ApplicationsService {
       throw new NotFoundException(`Vacancy ${vacancyId} was not found`);
     }
 
-    const vacancyView = mapVacancyEntity(vacancy, 'ru');
+    const notificationLanguage =
+      vacancy.teachingLanguage === 'kz' ? 'kz' : 'ru';
+    const vacancyView = mapVacancyEntity(vacancy, notificationLanguage);
 
     const attachment =
       uploadedFile.attachmentPath && uploadedFile.attachmentStoredName

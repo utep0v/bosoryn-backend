@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { WhatsAppService } from './whatsapp.service';
 
+type NotificationLanguage = 'kz' | 'ru';
+
 interface NotifySchoolAboutApplicationPayload {
   fullName: string;
   phone: string;
@@ -11,6 +13,7 @@ interface NotifySchoolAboutApplicationPayload {
     schoolName: string;
     subjectName: string;
     regionName: string;
+    teachingLanguage: NotificationLanguage;
   };
   attachment?: {
     fileName: string;
@@ -31,21 +34,13 @@ export class NotificationsService {
   ) {
     const schoolEmail = payload.vacancy.schoolEmail;
     const schoolPhone = payload.vacancy.schoolPhone;
-
-    const text = [
-      'Новая заявка на вакансию',
-      `ФИО: ${payload.fullName}`,
-      `Телефон: ${payload.phone}`,
-      `Школа: ${payload.vacancy.schoolName}`,
-      `Предмет: ${payload.vacancy.subjectName}`,
-      `Регион: ${payload.vacancy.regionName}`,
-    ].join('\n');
+    const message = this.buildApplicationMessage(payload);
 
     const emailResult = schoolEmail
       ? await this.emailService.send({
           to: schoolEmail,
-          subject: `Новая заявка на вакансию: ${payload.vacancy.subjectName}`,
-          text,
+          subject: message.subject,
+          text: message.text,
           attachments: payload.attachment
             ? [
                 {
@@ -64,7 +59,7 @@ export class NotificationsService {
     const whatsappTextResult = schoolPhone
       ? await this.whatsAppService.sendText({
           to: schoolPhone,
-          text,
+          text: message.text,
         })
       : {
           status: 'skipped' as const,
@@ -85,7 +80,7 @@ export class NotificationsService {
         fileName: payload.attachment.fileName,
         mimeType: payload.attachment.mimeType,
         buffer: payload.attachment.buffer,
-        caption: `Документ кандидата: ${payload.fullName}`,
+        caption: message.documentCaption,
       });
     }
 
@@ -107,6 +102,36 @@ export class NotificationsService {
         status: finalWhatsappStatus,
         error: finalWhatsappError,
       },
+    };
+  }
+
+  private buildApplicationMessage(payload: NotifySchoolAboutApplicationPayload) {
+    if (payload.vacancy.teachingLanguage === 'kz') {
+      return {
+        subject: `Бос жұмыс орнына жаңа өтінім: ${payload.vacancy.subjectName}`,
+        documentCaption: `Кандидат құжаты: ${payload.fullName}`,
+        text: [
+          'Бос жұмыс орнына жаңа өтінім',
+          `Аты-жөні: ${payload.fullName}`,
+          `Байланыс нөмірі: ${payload.phone}`,
+          `Мекеме: ${payload.vacancy.schoolName}`,
+          `Мамандық: ${payload.vacancy.subjectName}`,
+          `Аймақ: ${payload.vacancy.regionName}`,
+        ].join('\n'),
+      };
+    }
+
+    return {
+      subject: `Новая заявка на вакансию: ${payload.vacancy.subjectName}`,
+      documentCaption: `Документ кандидата: ${payload.fullName}`,
+      text: [
+        'Новая заявка на вакансию',
+        `ФИО: ${payload.fullName}`,
+        `Телефон: ${payload.phone}`,
+        `Школа: ${payload.vacancy.schoolName}`,
+        `Предмет: ${payload.vacancy.subjectName}`,
+        `Регион: ${payload.vacancy.regionName}`,
+      ].join('\n'),
     };
   }
 }
