@@ -13,6 +13,13 @@ export interface UploadedApplicationFile {
   buffer: Buffer;
 }
 
+export interface SavedApplicationFile {
+  attachmentOriginalName: string | null;
+  attachmentStoredName: string | null;
+  attachmentMimeType: string | null;
+  attachmentPath: string | null;
+}
+
 @Injectable()
 export class ApplicationUploadService {
   private readonly uploadDir = resolve(
@@ -26,7 +33,7 @@ export class ApplicationUploadService {
     }
   }
 
-  async save(file?: UploadedApplicationFile) {
+  async save(file?: UploadedApplicationFile): Promise<SavedApplicationFile> {
     if (!file) {
       return {
         attachmentOriginalName: null,
@@ -38,19 +45,32 @@ export class ApplicationUploadService {
 
     this.assertMimeType(file.mimetype);
 
+    const normalizedOriginalName = this.normalizeFileName(file.originalname);
+
     const extension =
-      extname(file.originalname) || this.getDefaultExtension(file.mimetype);
+      extname(normalizedOriginalName) ||
+      this.getDefaultExtension(file.mimetype);
+
     const storedName = `${randomUUID()}${extension}`;
     const absolutePath = resolve(this.uploadDir, storedName);
 
     await fs.writeFile(absolutePath, file.buffer);
 
     return {
-      attachmentOriginalName: file.originalname,
+      attachmentOriginalName: normalizedOriginalName,
       attachmentStoredName: storedName,
       attachmentMimeType: file.mimetype,
       attachmentPath: absolutePath,
     };
+  }
+
+  private normalizeFileName(fileName: string) {
+    try {
+      const decoded = Buffer.from(fileName, 'latin1').toString('utf8');
+      return decoded.replace(/[\/\\?%*:|"<>]/g, '_').trim();
+    } catch {
+      return fileName.replace(/[\/\\?%*:|"<>]/g, '_').trim();
+    }
   }
 
   async read(attachmentPath: string | null) {

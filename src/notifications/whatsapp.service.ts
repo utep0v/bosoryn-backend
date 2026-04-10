@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Injectable,
   Logger,
+  NotFoundException,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
 import { resolve } from 'node:path';
+import QRCode from 'qrcode';
 
 interface WhatsAppTextMessage {
   to: string;
@@ -16,12 +18,35 @@ interface SocketLike {
   user?: {
     id?: string;
   };
+  authState?: {
+    creds?: {
+      registered?: boolean;
+    };
+  };
   ev: {
     on: (event: string, listener: (...args: unknown[]) => void) => void;
   };
-  sendMessage: (jid: string, content: { text: string }) => Promise<unknown>;
+  sendMessage: (
+    jid: string,
+    content:
+      | { text: string }
+      | {
+          document: Buffer;
+          mimetype: string;
+          fileName: string;
+          caption?: string;
+        },
+  ) => Promise<unknown>;
   requestPairingCode: (phoneNumber: string) => Promise<string>;
   end: (error?: Error) => void;
+}
+
+interface WhatsAppDocumentMessage {
+  to: string;
+  fileName: string;
+  mimeType: string;
+  buffer: Buffer;
+  caption?: string;
 }
 
 export interface WhatsAppDeliveryResult {
@@ -32,20 +57,28 @@ export interface WhatsAppDeliveryResult {
 @Injectable()
 export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WhatsAppService.name);
+
   private socket: SocketLike | null = null;
   private connectionState: 'idle' | 'connecting' | 'open' | 'closed' = 'idle';
   private pairingCode: string | null = null;
+  private qrCode: string | null = null;
+  private qrCodeCreatedAt: string | null = null;
   private connectedAccount: string | null = null;
   private lastError: string | null = null;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private startupPromise: Promise<SocketLike> | null = null;
+  private pairingRequested = false;
+  private pairingPhoneNumber: string | null = null;
 
   async onModuleInit() {
     if (!this.isEnabled()) {
+      this.logger.warn('WhatsApp integration is disabled');
       return;
     }
 
-    await this.ensureSocket();
+    this.logger.log(
+      'WhatsApp integration is enabled and will connect on demand.',
+    );
   }
 
   onModuleDestroy() {
@@ -64,9 +97,27 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       connection: this.connectionState,
       connectedAccount: this.connectedAccount,
       pairingCode: this.pairingCode,
+      hasQrCode: Boolean(this.qrCode),
+      qrCodeCreatedAt: this.qrCodeCreatedAt,
+      qrCodeUrl: this.qrCode ? '/whatsapp/qr' : null,
       authDir: this.getAuthDir(),
       lastError: this.lastError,
+      pairingRequested: this.pairingRequested,
+      pairingPhoneNumber: this.pairingPhoneNumber,
     };
+  }
+
+  async getQrCodePng() {
+    if (!this.qrCode) {
+      throw new NotFoundException('WhatsApp QR code is not available yet');
+    }
+
+    return QRCode.toBuffer(this.qrCode, {
+      errorCorrectionLevel: 'M',
+      margin: 2,
+      scale: 8,
+      type: 'png',
+    });
   }
 
   async requestPairingCode(phoneNumber?: string) {
@@ -84,30 +135,25 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-    const socket = await this.ensureSocket();
+    this.pairingPhoneNumber = normalizedPhone;
+    this.pairingRequested = false;
+    this.pairingCode = null;
+    this.lastError = null;
 
-    try {
-      const code = await socket.requestPairingCode(normalizedPhone);
-      this.pairingCode = code;
-      this.lastError = null;
-
-      return {
-        phoneNumber: normalizedPhone,
-        pairingCode: code,
-      };
-    } catch (error) {
-      const reason =
-        error instanceof Error
-          ? error.message
-          : 'Failed to request pairing code';
-
-      this.lastError = reason;
-      this.logger.error(
-        `Failed to request pairing code for ${normalizedPhone}: ${reason}`,
-      );
-
-      throw new BadRequestException(reason);
+    if (this.socket) {
+      this.logger.log('Closing previous WhatsApp socket before new pairing...');
+      this.socket.end(undefined);
+      this.socket = null;
+      this.connectionState = 'idle';
     }
+
+    await this.ensureSocket();
+
+    return {
+      message:
+        'WhatsApp socket started. Wait a few seconds and check console/status for pairing code.',
+      phoneNumber: normalizedPhone,
+    };
   }
 
   async sendText(
@@ -125,13 +171,26 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     if (!jid) {
       return {
         status: 'failed',
-        error: 'School phone is invalid for WhatsApp',
+        error: 'Phone is invalid for WhatsApp',
       };
     }
 
-    await this.ensureSocket();
+    try {
+      await this.ensureSocket();
+      await this.waitForOpenConnection();
+    } catch (error) {
+      const reason =
+        error instanceof Error
+          ? error.message
+          : 'WhatsApp session is not connected';
 
-    if (!this.socket || this.connectionState !== 'open') {
+      return {
+        status: 'skipped',
+        error: reason,
+      };
+    }
+
+    if (!this.socket) {
       return {
         status: 'skipped',
         error: 'WhatsApp session is not connected',
@@ -192,20 +251,24 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async createSocket() {
-    const baileys = await import('baileys');
+    const baileys = await import('@whiskeysockets/baileys');
     const { default: pino } = await import('pino');
+
     const { state, saveCreds } = await baileys.useMultiFileAuthState(
       this.getAuthDir(),
     );
 
+    const { version } = await baileys.fetchLatestWaWebVersion();
+
     const socket = baileys.default({
       auth: state,
+      version,
       browser: baileys.Browsers.macOS('Desktop'),
-      printQRInTerminal: (process.env.WHATSAPP_PRINT_QR ?? 'false') === 'true',
-      logger: pino({ level: process.env.WHATSAPP_LOG_LEVEL ?? 'silent' }),
+      printQRInTerminal: false,
+      logger: pino({ level: process.env.WHATSAPP_LOG_LEVEL ?? 'info' }),
       markOnlineOnConnect: false,
       syncFullHistory: false,
-    }) as SocketLike;
+    });
 
     this.socket = socket;
     this.connectionState = 'connecting';
@@ -214,17 +277,65 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     socket.ev.on('creds.update', () => {
       void saveCreds();
     });
-    socket.ev.on('connection.update', (update) => {
+
+    socket.ev.on('connection.update', async (update) => {
       const typedUpdate = update as {
         connection?: string;
         lastDisconnect?: {
           error?: unknown;
         };
+        qr?: string;
       };
+
       const connection = typedUpdate.connection;
+
+      if (typedUpdate.qr) {
+        this.qrCode = typedUpdate.qr;
+        this.qrCodeCreatedAt = new Date().toISOString();
+        this.lastError = null;
+        this.logger.log('WhatsApp QR code received');
+
+        if (
+          !this.pairingRequested &&
+          !socket.authState?.creds?.registered &&
+          this.pairingPhoneNumber
+        ) {
+          this.pairingRequested = true;
+
+          try {
+            this.logger.log(
+              `Requesting WhatsApp pairing code for ${this.pairingPhoneNumber}`,
+            );
+
+            const code = await socket.requestPairingCode(
+              this.pairingPhoneNumber,
+            );
+
+            this.pairingCode = code;
+            this.qrCode = null;
+            this.qrCodeCreatedAt = null;
+            this.lastError = null;
+
+            this.logger.log(
+              `WhatsApp pairing code generated for ${this.pairingPhoneNumber}: ${code}`,
+            );
+          } catch (error) {
+            const reason =
+              error instanceof Error
+                ? error.message
+                : 'Failed to request pairing code';
+
+            this.lastError = reason;
+            this.logger.error(
+              `Failed to request pairing code for ${this.pairingPhoneNumber}: ${reason}`,
+            );
+          }
+        }
+      }
 
       if (connection === 'connecting') {
         this.connectionState = 'connecting';
+        this.logger.log('WhatsApp is connecting...');
         return;
       }
 
@@ -232,7 +343,11 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
         this.connectionState = 'open';
         this.connectedAccount = socket.user?.id ?? null;
         this.pairingCode = null;
+        this.qrCode = null;
+        this.qrCodeCreatedAt = null;
         this.lastError = null;
+        this.pairingRequested = false;
+
         this.logger.log(
           `WhatsApp session connected as ${this.connectedAccount ?? 'unknown-account'}`,
         );
@@ -242,11 +357,14 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       if (connection === 'close') {
         this.connectionState = 'closed';
         this.connectedAccount = null;
+        this.qrCode = null;
+        this.qrCodeCreatedAt = null;
         this.socket = null;
 
         const statusCode = this.extractDisconnectCode(
           typedUpdate.lastDisconnect?.error,
         );
+
         const reason =
           typedUpdate.lastDisconnect?.error instanceof Error
             ? typedUpdate.lastDisconnect.error.message
@@ -255,8 +373,9 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
         this.lastError = reason;
 
         if (statusCode === baileys.DisconnectReason.loggedOut) {
+          this.pairingRequested = false;
           this.logger.warn(
-            'WhatsApp session was logged out. Request a new pairing code.',
+            'WhatsApp session was logged out. Delete auth folder and request pairing again.',
           );
           return;
         }
@@ -306,5 +425,150 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
   private normalizePhone(phone: string) {
     const digitsOnly = phone.replace(/\D/g, '');
     return digitsOnly.length >= 10 ? digitsOnly : null;
+  }
+
+  async startQrSession() {
+    if (!this.isEnabled()) {
+      throw new BadRequestException('WhatsApp integration is disabled');
+    }
+
+    this.pairingPhoneNumber = null;
+    this.pairingRequested = false;
+    this.pairingCode = null;
+    this.qrCode = null;
+    this.qrCodeCreatedAt = null;
+    this.lastError = null;
+
+    if (this.socket) {
+      this.logger.log('Closing previous WhatsApp socket before QR session...');
+      this.socket.end(undefined);
+      this.socket = null;
+      this.connectionState = 'idle';
+    }
+
+    await this.ensureSocket();
+
+    return {
+      message:
+        'WhatsApp QR session started. Open /whatsapp/qr in browser after QR is received.',
+    };
+  }
+
+  async sendDocument(
+    message: WhatsAppDocumentMessage,
+  ): Promise<WhatsAppDeliveryResult> {
+    if (!this.isEnabled()) {
+      return {
+        status: 'skipped',
+        error: 'Baileys WhatsApp integration is disabled',
+      };
+    }
+
+    const jid = this.toJid(message.to);
+
+    if (!jid) {
+      return {
+        status: 'failed',
+        error: 'Phone is invalid for WhatsApp',
+      };
+    }
+
+    if (!Buffer.isBuffer(message.buffer) || !message.buffer.length) {
+      return {
+        status: 'failed',
+        error: 'Document buffer is empty or invalid',
+      };
+    }
+
+    try {
+      await this.ensureSocket();
+      await this.waitForOpenConnection();
+    } catch (error) {
+      const reason =
+        error instanceof Error
+          ? error.message
+          : 'WhatsApp session is not connected';
+
+      return {
+        status: 'skipped',
+        error: reason,
+      };
+    }
+
+    if (!this.socket) {
+      return {
+        status: 'skipped',
+        error: 'WhatsApp session is not connected',
+      };
+    }
+
+    try {
+      await this.socket.sendMessage(jid, {
+        document: message.buffer,
+        mimetype: message.mimeType || 'application/octet-stream',
+        fileName: message.fileName || 'document',
+        caption: message.caption,
+      });
+
+      this.lastError = null;
+      this.logger.log(`WhatsApp document sent to ${jid}`);
+
+      return {
+        status: 'sent',
+        error: null,
+      };
+    } catch (error) {
+      const reason =
+        error instanceof Error
+          ? error.message
+          : 'Unknown WhatsApp document delivery error';
+
+      this.lastError = reason;
+      this.logger.error(
+        `Failed to send WhatsApp document to ${jid}: ${reason}`,
+      );
+
+      return {
+        status: 'failed',
+        error: reason,
+      };
+    }
+  }
+
+  private waitForOpenConnection(timeoutMs = 20000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.connectionState === 'open') {
+        resolve();
+        return;
+      }
+
+      const startedAt = Date.now();
+      const interval = setInterval(() => {
+        if (this.connectionState === 'open') {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          resolve();
+          return;
+        }
+
+        if (this.connectionState === 'closed') {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          reject(new Error('WhatsApp connection was closed'));
+          return;
+        }
+
+        if (Date.now() - startedAt > timeoutMs) {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          reject(new Error('Timed out waiting for WhatsApp connection'));
+        }
+      }, 300);
+
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        reject(new Error('Timed out waiting for WhatsApp connection'));
+      }, timeoutMs);
+    });
   }
 }

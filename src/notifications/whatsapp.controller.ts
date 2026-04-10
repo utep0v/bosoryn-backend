@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Post,
+  StreamableFile,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminAuthGuard } from '../auth/admin-auth.guard';
 import { WhatsAppService } from './whatsapp.service';
 
@@ -12,6 +20,14 @@ export class WhatsAppController {
     return this.whatsappService.getStatus();
   }
 
+  @Get('qr')
+  @Header('Content-Type', 'image/png')
+  @Header('Cache-Control', 'no-store')
+  async getQrCode() {
+    const png = await this.whatsappService.getQrCodePng();
+    return new StreamableFile(png);
+  }
+
   @Post('pairing-code')
   requestPairingCode(
     @Body()
@@ -20,5 +36,10 @@ export class WhatsAppController {
     },
   ) {
     return this.whatsappService.requestPairingCode(body.phoneNumber);
+  }
+
+  @Post('start-qr')
+  startQrSession() {
+    return this.whatsappService.startQrSession();
   }
 }

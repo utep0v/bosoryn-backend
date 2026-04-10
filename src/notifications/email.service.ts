@@ -4,6 +4,13 @@ interface EmailMessage {
   to: string;
   subject: string;
   text: string;
+  attachments?: EmailAttachment[];
+}
+
+interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
 }
 
 export interface EmailDeliveryResult {
@@ -56,6 +63,7 @@ export class EmailService {
         to: message.to,
         subject: message.subject,
         text: message.text,
+        attachments: message.attachments,
       });
 
       return {

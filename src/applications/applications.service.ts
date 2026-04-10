@@ -14,6 +14,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import {
   ApplicationUploadService,
   type UploadedApplicationFile,
+  type SavedApplicationFile,
 } from './application-upload.service';
 import { ReferralDocumentService } from './referral-document.service';
 
@@ -43,6 +44,7 @@ export class ApplicationsService {
 
   async list(filters: ApplicationFilters = {}) {
     const applications = await this.createListQuery(filters).getMany();
+
     return applications.map((application) =>
       mapApplicationEntity(application, 'ru'),
     );
@@ -101,7 +103,9 @@ export class ApplicationsService {
     const fullName = requireText(payload.fullName, 'fullName');
     const phone = requirePhone(payload.phone);
     const vacancyId = requireUuid(payload.vacancyId, 'vacancyId');
-    const uploadedFile = await this.applicationUploadService.save(file);
+
+    const uploadedFile: SavedApplicationFile =
+      await this.applicationUploadService.save(file);
 
     const application = await this.applicationsRepository.manager.transaction(
       async (manager) => {
@@ -161,11 +165,28 @@ export class ApplicationsService {
       throw new NotFoundException(`Vacancy ${vacancyId} was not found`);
     }
 
+    const vacancyView = mapVacancyEntity(vacancy, 'ru');
+
+    const attachment =
+      uploadedFile.attachmentPath && uploadedFile.attachmentStoredName
+        ? {
+            fileName:
+              uploadedFile.attachmentOriginalName ??
+              uploadedFile.attachmentStoredName,
+            mimeType:
+              uploadedFile.attachmentMimeType ?? 'application/octet-stream',
+            buffer: await this.applicationUploadService.read(
+              uploadedFile.attachmentPath,
+            ),
+          }
+        : null;
+
     const notificationsResult =
       await this.notificationsService.notifySchoolAboutApplication({
         fullName,
         phone,
-        vacancy: mapVacancyEntity(vacancy, 'ru'),
+        vacancy: vacancyView,
+        attachment,
       });
 
     application.emailStatus = notificationsResult.email.status;
@@ -204,6 +225,7 @@ export class ApplicationsService {
     }
 
     await this.applicationsRepository.remove(application);
+
     return mapApplicationEntity(application, 'ru');
   }
 
