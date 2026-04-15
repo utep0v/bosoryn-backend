@@ -12,7 +12,11 @@
     { "key": "school_id", "value": "cdff712c-641c-4d79-a440-9d21caf68d67" },
     { "key": "subject_id", "value": "9f1fb0a9-95d2-430b-a9a7-53f65f0e0a4f" },
     { "key": "vacancy_id", "value": "1fcc6cae-4f7e-4f64-bfbe-2805d86c7943" },
-    { "key": "application_id", "value": "844fbc6a-7ca2-45e8-a985-f2626d50fb42" },
+    {
+      "key": "application_id",
+      "value": "844fbc6a-7ca2-45e8-a985-f2626d50fb42"
+    },
+    { "key": "candidate_location_id", "value": "" },
     { "key": "pairing_phone", "value": "77070000000" }
   ],
   "item": [
@@ -41,9 +45,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin12345\"\n}"
@@ -416,6 +418,56 @@
           }
         },
         {
+          "name": "List Candidate Application Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications/locations"
+          }
+        },
+        {
+          "name": "Create Candidate Application Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Аягөз ауданы\",\n  \"city\": \"Аягөз\"\n}"
+            },
+            "url": "{{baseUrl}}/candidate-applications/locations"
+          }
+        },
+        {
+          "name": "Update Candidate Application Location",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Аягөз ауданы\",\n  \"city\": \"Баршатас\"\n}"
+            },
+            "url": "{{baseUrl}}/candidate-applications/locations/{{candidate_location_id}}"
+          }
+        },
+        {
+          "name": "Delete Candidate Application Location",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications/locations/{{candidate_location_id}}"
+          }
+        },
+        {
           "name": "Export Candidate Applications Excel",
           "request": {
             "method": "GET",
@@ -488,8 +540,16 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "vacancyId", "value": "{{vacancy_id}}", "type": "text" },
-                { "key": "fullName", "value": "Тестовый кандидат", "type": "text" },
+                {
+                  "key": "vacancyId",
+                  "value": "{{vacancy_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "fullName",
+                  "value": "Тестовый кандидат",
+                  "type": "text"
+                },
                 { "key": "phone", "value": "+77015554433", "type": "text" },
                 { "key": "iin", "value": "030101500111", "type": "text" },
                 { "key": "attachment", "type": "file", "src": "" }
@@ -499,21 +559,26 @@
           }
         },
         {
+          "name": "Public Candidate Application Locations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/candidate-applications/locations"
+          }
+        },
+        {
           "name": "Public Create Candidate Application",
           "request": {
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Тестовый кандидат\",\n  \"specialty\": \"Математика\",\n  \"iin\": \"030101500111\",\n  \"educationLevel\": \"Высшее\"\n}",
+              "raw": "{\n  \"fullName\": \"Тестовый кандидат\",\n  \"specialty\": \"Математика\",\n  \"iin\": \"030101500111\",\n  \"educationLevel\": \"Высшее\",\n  \"locationId\": \"{{candidate_location_id}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/public/candidate-applications"
           }
         }

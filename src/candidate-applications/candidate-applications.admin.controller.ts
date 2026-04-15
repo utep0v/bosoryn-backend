@@ -1,6 +1,17 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { AdminAuthGuard } from '../auth/admin-auth.guard';
+import { requireUuid } from '../common/validation';
 import { CandidateApplicationsService } from './candidate-applications.service';
 
 @Controller('candidate-applications')
@@ -13,6 +24,46 @@ export class CandidateApplicationsAdminController {
   @Get()
   list() {
     return this.candidateApplicationsService.list();
+  }
+
+  @Get('locations')
+  listLocations() {
+    return this.candidateApplicationsService.listLocations();
+  }
+
+  @Post('locations')
+  createLocation(
+    @Body()
+    body: {
+      oblys: string;
+      audan: string;
+      city: string;
+    },
+  ) {
+    return this.candidateApplicationsService.createLocation(body);
+  }
+
+  @Patch('locations/:id')
+  updateLocation(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      oblys?: string;
+      audan?: string;
+      city?: string;
+    },
+  ) {
+    return this.candidateApplicationsService.updateLocation(
+      requireUuid(id, 'id'),
+      body,
+    );
+  }
+
+  @Delete('locations/:id')
+  removeLocation(@Param('id') id: string) {
+    return this.candidateApplicationsService.removeLocation(
+      requireUuid(id, 'id'),
+    );
   }
 
   @Get('export')
