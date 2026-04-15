@@ -50,6 +50,7 @@ export interface Application {
   vacancyId: string;
   fullName: string;
   phone: string;
+  iin: string | null;
   attachmentOriginalName: string | null;
   attachmentStoredName: string | null;
   attachmentMimeType: string | null;
@@ -79,6 +80,7 @@ export interface ApplicationView {
   id: string;
   fullName: string;
   phone: string;
+  iin: string | null;
   createdAt: string;
   vacancyId: string;
   regionId: string;
@@ -100,4 +102,13 @@ export interface ApplicationView {
     downloadUrl: string | null;
   };
   notificationStatus: ApplicationNotificationStatus;
+}
+
+export interface CandidateApplicationView {
+  id: string;
+  fullName: string;
+  specialty: string;
+  iin: string;
+  educationLevel: string;
+  createdAt: string;
 }

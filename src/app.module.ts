@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CandidateApplicationsModule } from './candidate-applications/candidate-applications.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
@@ -19,6 +20,7 @@ import { VacanciesModule } from './vacancies/vacancies.module';
     }),
     AuthModule,
     DataModule,
+    CandidateApplicationsModule,
     RegionsModule,
     SchoolsModule,
     SubjectsModule,

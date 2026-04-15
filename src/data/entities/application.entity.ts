@@ -21,6 +21,9 @@ export class ApplicationEntity {
   @Column()
   phone: string;
 
+  @Column({ type: 'varchar', length: 12, nullable: true })
+  iin: string | null;
+
   @Column({ type: 'varchar', nullable: true })
   attachmentOriginalName: string | null;
 

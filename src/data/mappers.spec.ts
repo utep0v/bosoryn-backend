@@ -51,6 +51,7 @@ describe('data mappers', () => {
       vacancyId: '44444444-4444-4444-8444-444444444444',
       fullName: 'Тестовый Кандидат',
       phone: '+77015554433',
+      iin: '030101500111',
       attachmentOriginalName: 'portfolio.pdf',
       attachmentStoredName: 'abc.pdf',
       attachmentMimeType: 'application/pdf',
@@ -97,6 +98,7 @@ describe('data mappers', () => {
     const mapped = mapApplicationEntity(application, 'ru');
 
     expect(mapped.fullName).toBe('Тестовый Кандидат');
+    expect(mapped.iin).toBe('030101500111');
     expect(mapped.schoolEmail).toBe('school@example.com');
     expect(mapped.isPedagogical).toBe(true);
     expect(mapped.attachment.hasFile).toBe(true);

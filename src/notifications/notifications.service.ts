@@ -7,6 +7,7 @@ type NotificationLanguage = 'kz' | 'ru';
 interface NotifySchoolAboutApplicationPayload {
   fullName: string;
   phone: string;
+  iin: string;
   vacancy: {
     schoolEmail?: string | null;
     schoolPhone?: string | null;
@@ -114,6 +115,7 @@ export class NotificationsService {
           'Бос жұмыс орнына жаңа өтінім',
           `Аты-жөні: ${payload.fullName}`,
           `Байланыс нөмірі: ${payload.phone}`,
+          `ЖСН: ${payload.iin}`,
           `Мекеме: ${payload.vacancy.schoolName}`,
           `Мамандық: ${payload.vacancy.subjectName}`,
           `Аймақ: ${payload.vacancy.regionName}`,
@@ -128,6 +130,7 @@ export class NotificationsService {
         'Новая заявка на вакансию',
         `ФИО: ${payload.fullName}`,
         `Телефон: ${payload.phone}`,
+        `ИИН: ${payload.iin}`,
         `Школа: ${payload.vacancy.schoolName}`,
         `Предмет: ${payload.vacancy.subjectName}`,
         `Регион: ${payload.vacancy.regionName}`,

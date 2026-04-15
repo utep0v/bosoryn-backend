@@ -21,6 +21,7 @@ export class ApplicationsPublicController {
       vacancyId: string;
       fullName: string;
       phone: string;
+      iin: string;
     },
     @UploadedFile() file?: UploadedApplicationFile,
   ) {

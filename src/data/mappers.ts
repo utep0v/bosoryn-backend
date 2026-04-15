@@ -67,6 +67,7 @@ export function mapApplicationEntity(
     id: application.id,
     fullName: application.fullName,
     phone: application.phone,
+    iin: application.iin,
     createdAt: application.createdAt.toISOString(),
     vacancyId: application.vacancyId,
     regionId: vacancyView.regionId,

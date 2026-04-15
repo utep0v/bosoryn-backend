@@ -37,6 +37,18 @@ export function requirePhone(value: unknown, fieldName = 'phone') {
   return phone;
 }
 
+export function requireIin(value: unknown, fieldName = 'iin') {
+  const iin = requireText(value, fieldName).replace(/\D/g, '');
+
+  if (!/^\d{12}$/.test(iin)) {
+    throw new BadRequestException(
+      `${fieldName} must contain exactly 12 digits`,
+    );
+  }
+
+  return iin;
+}
+
 export function requireNumber(value: unknown, fieldName: string) {
   const numberValue =
     typeof value === 'number'

@@ -65,6 +65,8 @@ Production deployment files are included:
 - `WHATSAPP_PRINT_QR`
 - `WHATSAPP_LOG_LEVEL`
 - `APPLICATION_UPLOAD_DIR`
+- `REFERRAL_TEMPLATE_RU_PATH`
+- `REFERRAL_TEMPLATE_KZ_PATH`
 
 ## API overview
 

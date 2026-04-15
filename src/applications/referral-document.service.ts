@@ -6,30 +6,17 @@ import { ApplicationView } from '../domain/models';
 
 const UNDERSCORE_OCCURRENCES = {
   topFullName: 0,
-  topSpecialtyA: 1,
-  topSpecialtyB: 2,
-  topOrganizationA: 3,
-  topOrganizationB: 4,
-  topAddressA: 5,
-  topAddressB: 6,
-  topAddressC: 7,
-  topAddressD: 8,
-  topAddressE: 9,
-  bottomFullName: 12,
-  bottomSpecialtyA: 13,
-  bottomSpecialtyB: 14,
-  bottomSpecialtyC: 15,
-  bottomOrganizationA: 16,
-  bottomOrganizationB: 17,
-  bottomAddressA: 18,
-  bottomAddressB: 19,
-  bottomAddressC: 20,
+  topSpecialty: 1,
+  topAddress: 2,
+  bottomFullName: 4,
+  bottomSpecialty: 5,
+  bottomAddress: 6,
 } as const;
 
 @Injectable()
 export class ReferralDocumentService {
   async generate(application: ApplicationView) {
-    const templateBuffer = await this.loadTemplate();
+    const templateBuffer = await this.loadTemplate(application.teachingLanguage);
     const zip = await JSZip.loadAsync(templateBuffer);
     const documentXmlFile = zip.file('word/document.xml');
 
@@ -53,11 +40,14 @@ export class ReferralDocumentService {
     };
   }
 
-  private async loadTemplate() {
+  private async loadTemplate(teachingLanguage: ApplicationView['teachingLanguage']) {
     const templatePath = resolve(
       process.cwd(),
-      process.env.REFERRAL_TEMPLATE_RU_PATH ??
-        'data/templates/referral-template-ru.docx',
+      teachingLanguage === 'kz'
+        ? process.env.REFERRAL_TEMPLATE_KZ_PATH ??
+            'data/templates/referral-template-kz-2026.docx'
+        : process.env.REFERRAL_TEMPLATE_RU_PATH ??
+            'data/templates/referral-template-ru-2026.docx',
     );
 
     return readFile(templatePath);
@@ -65,10 +55,6 @@ export class ReferralDocumentService {
 
   private fillTemplate(documentXml: string, application: ApplicationView) {
     const specialty = this.limitText(application.subjectName, 70);
-    const organizationAndPosition = this.limitText(
-      `${application.schoolName}, ${application.subjectName}`,
-      110,
-    );
     const addressContact = this.limitText(
       `${application.regionName}, тел.: ${application.schoolPhone}, e-mail: ${application.schoolEmail}`,
       130,
@@ -76,24 +62,11 @@ export class ReferralDocumentService {
 
     const replacements = new Map<number, string>([
       [UNDERSCORE_OCCURRENCES.topFullName, application.fullName],
-      [UNDERSCORE_OCCURRENCES.topSpecialtyA, specialty],
-      [UNDERSCORE_OCCURRENCES.topSpecialtyB, ''],
-      [UNDERSCORE_OCCURRENCES.topOrganizationA, organizationAndPosition],
-      [UNDERSCORE_OCCURRENCES.topOrganizationB, ''],
-      [UNDERSCORE_OCCURRENCES.topAddressA, addressContact],
-      [UNDERSCORE_OCCURRENCES.topAddressB, ''],
-      [UNDERSCORE_OCCURRENCES.topAddressC, ''],
-      [UNDERSCORE_OCCURRENCES.topAddressD, ''],
-      [UNDERSCORE_OCCURRENCES.topAddressE, ''],
+      [UNDERSCORE_OCCURRENCES.topSpecialty, specialty],
+      [UNDERSCORE_OCCURRENCES.topAddress, addressContact],
       [UNDERSCORE_OCCURRENCES.bottomFullName, application.fullName],
-      [UNDERSCORE_OCCURRENCES.bottomSpecialtyA, specialty],
-      [UNDERSCORE_OCCURRENCES.bottomSpecialtyB, ''],
-      [UNDERSCORE_OCCURRENCES.bottomSpecialtyC, ''],
-      [UNDERSCORE_OCCURRENCES.bottomOrganizationA, organizationAndPosition],
-      [UNDERSCORE_OCCURRENCES.bottomOrganizationB, ''],
-      [UNDERSCORE_OCCURRENCES.bottomAddressA, addressContact],
-      [UNDERSCORE_OCCURRENCES.bottomAddressB, ''],
-      [UNDERSCORE_OCCURRENCES.bottomAddressC, ''],
+      [UNDERSCORE_OCCURRENCES.bottomSpecialty, specialty],
+      [UNDERSCORE_OCCURRENCES.bottomAddress, addressContact],
     ]);
 
     let underscoreIndex = -1;
@@ -107,9 +80,23 @@ export class ReferralDocumentService {
           return `${openTag}${textContent}${closeTag}`;
         }
 
-        return `${openTag}${this.escapeXml(replacements.get(underscoreIndex) ?? '')}${closeTag}`;
+        return `${openTag}${this.replaceUnderscorePlaceholder(textContent, replacements.get(underscoreIndex) ?? '')}${closeTag}`;
       },
     );
+  }
+
+  private replaceUnderscorePlaceholder(textContent: string, value: string) {
+    const escapedValue = this.escapeXml(value);
+    let replaced = false;
+
+    return textContent.replace(/_+/g, (match) => {
+      if (replaced) {
+        return match;
+      }
+
+      replaced = true;
+      return escapedValue;
+    });
   }
 
   private escapeXml(value: string) {

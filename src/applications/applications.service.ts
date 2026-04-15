@@ -6,7 +6,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import ExcelJS from 'exceljs';
 import { Repository } from 'typeorm';
-import { requirePhone, requireText, requireUuid } from '../common/validation';
+import {
+  requireIin,
+  requirePhone,
+  requireText,
+  requireUuid,
+} from '../common/validation';
 import { ApplicationEntity } from '../data/entities/application.entity';
 import { VacancyEntity } from '../data/entities/vacancy.entity';
 import { mapApplicationEntity, mapVacancyEntity } from '../data/mappers';
@@ -28,6 +33,7 @@ interface CreateApplicationDto {
   vacancyId: string;
   fullName: string;
   phone: string;
+  iin: string;
 }
 
 @Injectable()
@@ -59,6 +65,7 @@ export class ApplicationsService {
       { header: 'Дата заявки', key: 'createdAt', width: 24 },
       { header: 'ФИО', key: 'fullName', width: 28 },
       { header: 'Телефон', key: 'phone', width: 18 },
+      { header: 'ИИН', key: 'iin', width: 18 },
       { header: 'Регион', key: 'regionName', width: 32 },
       { header: 'Школа', key: 'schoolName', width: 36 },
       { header: 'Предмет', key: 'subjectName', width: 28 },
@@ -75,6 +82,7 @@ export class ApplicationsService {
         createdAt: this.formatDate(application.createdAt),
         fullName: view.fullName,
         phone: view.phone,
+        iin: view.iin ?? '',
         regionName: view.regionName,
         schoolName: view.schoolName,
         subjectName: view.subjectName,
@@ -102,6 +110,7 @@ export class ApplicationsService {
   ) {
     const fullName = requireText(payload.fullName, 'fullName');
     const phone = requirePhone(payload.phone);
+    const iin = requireIin(payload.iin);
     const vacancyId = requireUuid(payload.vacancyId, 'vacancyId');
 
     const uploadedFile: SavedApplicationFile =
@@ -141,6 +150,7 @@ export class ApplicationsService {
             vacancyId,
             fullName,
             phone,
+            iin,
             ...uploadedFile,
             emailStatus: 'pending',
             whatsappStatus: 'pending',
@@ -187,6 +197,7 @@ export class ApplicationsService {
       await this.notificationsService.notifySchoolAboutApplication({
         fullName,
         phone,
+        iin,
         vacancy: vacancyView,
         attachment,
       });
@@ -239,7 +250,7 @@ export class ApplicationsService {
     }
 
     return this.referralDocumentService.generate(
-      mapApplicationEntity(application, 'ru'),
+      mapApplicationEntity(application, application.vacancy.teachingLanguage),
     );
   }
 

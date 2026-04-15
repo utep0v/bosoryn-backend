@@ -75,6 +75,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           vacancyId: application.vacancyId,
           fullName: application.fullName,
           phone: application.phone,
+          iin: application.iin,
           attachmentOriginalName: application.attachmentOriginalName,
           attachmentStoredName: application.attachmentStoredName,
           attachmentMimeType: application.attachmentMimeType,

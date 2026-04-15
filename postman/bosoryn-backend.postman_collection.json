@@ -403,6 +403,31 @@
       ]
     },
     {
+      "name": "Candidate Applications",
+      "item": [
+        {
+          "name": "List Candidate Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications"
+          }
+        },
+        {
+          "name": "Export Candidate Applications Excel",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications/export"
+          }
+        }
+      ]
+    },
+    {
       "name": "WhatsApp",
       "item": [
         {
@@ -466,10 +491,30 @@
                 { "key": "vacancyId", "value": "{{vacancy_id}}", "type": "text" },
                 { "key": "fullName", "value": "Тестовый кандидат", "type": "text" },
                 { "key": "phone", "value": "+77015554433", "type": "text" },
+                { "key": "iin", "value": "030101500111", "type": "text" },
                 { "key": "attachment", "type": "file", "src": "" }
               ]
             },
             "url": "{{baseUrl}}/public/applications"
+          }
+        },
+        {
+          "name": "Public Create Candidate Application",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Тестовый кандидат\",\n  \"specialty\": \"Математика\",\n  \"iin\": \"030101500111\",\n  \"educationLevel\": \"Высшее\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/public/candidate-applications"
           }
         }
       ]
