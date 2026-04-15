@@ -249,8 +249,11 @@ export class ApplicationsService {
       throw new NotFoundException(`Application ${id} was not found`);
     }
 
+    const language =
+      application.vacancy.teachingLanguage === 'kz' ? 'kz' : 'ru';
+
     return this.referralDocumentService.generate(
-      mapApplicationEntity(application, application.vacancy.teachingLanguage),
+      mapApplicationEntity(application, language),
     );
   }
 
