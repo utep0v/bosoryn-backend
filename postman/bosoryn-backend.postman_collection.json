@@ -437,7 +437,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Аягөз ауданы\",\n  \"city\": \"Аягөз\"\n}"
+              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Аягөз ауданы\"\n}"
             },
             "url": "{{baseUrl}}/candidate-applications/locations"
           }
@@ -452,7 +452,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Аягөз ауданы\",\n  \"city\": \"Баршатас\"\n}"
+              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Жармин ауданы\"\n}"
             },
             "url": "{{baseUrl}}/candidate-applications/locations/{{candidate_location_id}}"
           }

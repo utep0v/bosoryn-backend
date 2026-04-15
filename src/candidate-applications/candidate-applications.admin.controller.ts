@@ -37,7 +37,6 @@ export class CandidateApplicationsAdminController {
     body: {
       oblys: string;
       audan: string;
-      city: string;
     },
   ) {
     return this.candidateApplicationsService.createLocation(body);
@@ -50,7 +49,6 @@ export class CandidateApplicationsAdminController {
     body: {
       oblys?: string;
       audan?: string;
-      city?: string;
     },
   ) {
     return this.candidateApplicationsService.updateLocation(

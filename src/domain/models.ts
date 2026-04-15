@@ -113,7 +113,6 @@ export interface CandidateApplicationView {
   locationId: string | null;
   oblys: string | null;
   audan: string | null;
-  city: string | null;
   locationLabel: string | null;
   createdAt: string;
 }
@@ -122,7 +121,6 @@ export interface CandidateApplicationLocationView {
   id: string;
   oblys: string;
   audan: string;
-  city: string;
   label: string;
   createdAt: string;
 }

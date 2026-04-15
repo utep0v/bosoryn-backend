@@ -33,9 +33,6 @@ export class CandidateApplicationEntity {
   @Column({ type: 'text', nullable: true })
   audan: string | null;
 
-  @Column({ type: 'text', nullable: true })
-  city: string | null;
-
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

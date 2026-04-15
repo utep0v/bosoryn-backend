@@ -25,7 +25,6 @@ interface CreateCandidateApplicationDto {
 interface SaveCandidateApplicationLocationDto {
   oblys: string;
   audan: string;
-  city: string;
 }
 
 @Injectable()
@@ -60,7 +59,6 @@ export class CandidateApplicationsService {
       { header: 'Уровень образования', key: 'educationLevel', width: 24 },
       { header: 'Облыс', key: 'oblys', width: 24 },
       { header: 'Аудан', key: 'audan', width: 24 },
-      { header: 'Қала', key: 'city', width: 24 },
     ];
 
     applications.forEach((application) => {
@@ -72,7 +70,6 @@ export class CandidateApplicationsService {
         educationLevel: application.educationLevel,
         oblys: application.oblys ?? '',
         audan: application.audan ?? '',
-        city: application.city ?? '',
       });
     });
 
@@ -89,7 +86,6 @@ export class CandidateApplicationsService {
       order: {
         oblys: 'ASC',
         audan: 'ASC',
-        city: 'ASC',
         createdAt: 'ASC',
       },
     });
@@ -104,12 +100,9 @@ export class CandidateApplicationsService {
       {
         oblys: string;
         audans: Array<{
+          id: string;
           audan: string;
-          cities: Array<{
-            id: string;
-            city: string;
-            label: string;
-          }>;
+          label: string;
         }>;
       }
     >();
@@ -131,17 +124,12 @@ export class CandidateApplicationsService {
 
       if (!audanNode) {
         audanNode = {
+          id: location.id,
           audan: location.audan,
-          cities: [],
+          label: location.label,
         };
         oblysNode.audans.push(audanNode);
       }
-
-      audanNode.cities.push({
-        id: location.id,
-        city: location.city,
-        label: location.label,
-      });
     });
 
     return {
@@ -182,15 +170,10 @@ export class CandidateApplicationsService {
       location.audan = requireText(payload.audan, 'audan');
     }
 
-    if (payload.city !== undefined) {
-      location.city = requireText(payload.city, 'city');
-    }
-
     await this.assertLocationIsUnique(
       {
         oblys: location.oblys,
         audan: location.audan,
-        city: location.city,
       },
       id,
     );
@@ -237,7 +220,6 @@ export class CandidateApplicationsService {
         locationId: location.id,
         oblys: location.oblys,
         audan: location.audan,
-        city: location.city,
       }),
     );
 
@@ -256,7 +238,6 @@ export class CandidateApplicationsService {
       locationId: application.locationId,
       oblys: application.oblys,
       audan: application.audan,
-      city: application.city,
       locationLabel: this.formatLocationLabel(application),
       createdAt: application.createdAt.toISOString(),
     };
@@ -269,7 +250,6 @@ export class CandidateApplicationsService {
       id: location.id,
       oblys: location.oblys,
       audan: location.audan,
-      city: location.city,
       label: this.formatLocationLabel(location) ?? '',
       createdAt: location.createdAt.toISOString(),
     };
@@ -289,7 +269,6 @@ export class CandidateApplicationsService {
     return {
       oblys: requireText(payload.oblys, 'oblys'),
       audan: requireText(payload.audan, 'audan'),
-      city: requireText(payload.city, 'city'),
     };
   }
 
@@ -302,7 +281,6 @@ export class CandidateApplicationsService {
         where: {
           oblys: payload.oblys,
           audan: payload.audan,
-          city: payload.city,
         },
       },
     );
@@ -317,9 +295,8 @@ export class CandidateApplicationsService {
   private formatLocationLabel(location: {
     oblys: string | null;
     audan: string | null;
-    city: string | null;
   }) {
-    const parts = [location.oblys, location.audan, location.city].filter(
+    const parts = [location.oblys, location.audan].filter(
       (value): value is string => Boolean(value),
     );
 
