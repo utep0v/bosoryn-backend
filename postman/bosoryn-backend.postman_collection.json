@@ -8,6 +8,10 @@
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:3000" },
     { "key": "admin_token", "value": "" },
+    {
+      "key": "region_oblys_id",
+      "value": "c7c1ef46-ec80-4a86-8467-b9366992c6d1"
+    },
     { "key": "region_id", "value": "0fa8db4a-bd4c-48fb-aac7-4f8c6f9e17f7" },
     { "key": "school_id", "value": "cdff712c-641c-4d79-a440-9d21caf68d67" },
     { "key": "subject_id", "value": "9f1fb0a9-95d2-430b-a9a7-53f65f0e0a4f" },
@@ -16,6 +20,7 @@
       "key": "application_id",
       "value": "844fbc6a-7ca2-45e8-a985-f2626d50fb42"
     },
+    { "key": "candidate_application_id", "value": "" },
     { "key": "candidate_location_id", "value": "" },
     { "key": "pairing_phone", "value": "77070000000" }
   ],
@@ -123,6 +128,56 @@
           }
         },
         {
+          "name": "List Region Oblyses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/regions/oblyses"
+          }
+        },
+        {
+          "name": "Create Region Oblys",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameKz\": \"Жаңа облыс\",\n  \"nameRu\": \"Новая область\"\n}"
+            },
+            "url": "{{baseUrl}}/regions/oblyses"
+          }
+        },
+        {
+          "name": "Update Region Oblys",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameKz\": \"Абай облысы\",\n  \"nameRu\": \"Абайская область\"\n}"
+            },
+            "url": "{{baseUrl}}/regions/oblyses/{{region_oblys_id}}"
+          }
+        },
+        {
+          "name": "Delete Region Oblys",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/regions/oblyses/{{region_oblys_id}}"
+          }
+        },
+        {
           "name": "Create Region",
           "request": {
             "method": "POST",
@@ -132,7 +187,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nameKz\": \"Жаңа аймақ\",\n  \"nameRu\": \"Новый регион\"\n}"
+              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"nameKz\": \"Аягөз ауданы\",\n  \"nameRu\": \"Аягозский район\",\n  \"type\": \"district\"\n}"
             },
             "url": "{{baseUrl}}/regions"
           }
@@ -147,7 +202,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nameKz\": \"Абай ауданы - Абай облысы (жаңартылды)\",\n  \"nameRu\": \"Абайский район - Абайская область (обновлено)\"\n}"
+              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"nameKz\": \"Аягөз қаласы\",\n  \"nameRu\": \"город Аягоз\",\n  \"type\": \"city\"\n}"
             },
             "url": "{{baseUrl}}/regions/{{region_id}}"
           }
@@ -437,7 +492,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Аягөз ауданы\"\n}"
+              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"name\": \"Аягөз ауданы\",\n  \"type\": \"district\"\n}"
             },
             "url": "{{baseUrl}}/candidate-applications/locations"
           }
@@ -452,7 +507,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oblys\": \"Абай облысы\",\n  \"audan\": \"Жармин ауданы\"\n}"
+              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"name\": \"Аягөз қаласы\",\n  \"type\": \"city\"\n}"
             },
             "url": "{{baseUrl}}/candidate-applications/locations/{{candidate_location_id}}"
           }
@@ -465,6 +520,16 @@
               { "key": "Authorization", "value": "Bearer {{admin_token}}" }
             ],
             "url": "{{baseUrl}}/candidate-applications/locations/{{candidate_location_id}}"
+          }
+        },
+        {
+          "name": "Download Candidate Referral Document",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications/{{candidate_application_id}}/referral-document"
           }
         },
         {
@@ -580,6 +645,13 @@
             },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/public/candidate-applications"
+          }
+        },
+        {
+          "name": "Public Candidate Referral Document",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/candidate-applications/{{candidate_application_id}}/referral-document"
           }
         }
       ]

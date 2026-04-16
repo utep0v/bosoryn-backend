@@ -1,12 +1,14 @@
 import {
   Application,
   Region,
+  RegionOblys,
   School,
   Subject,
   Vacancy,
 } from '../domain/models';
 
 interface SeedData {
+  oblyses: RegionOblys[];
   regions: Region[];
   schools: School[];
   subjects: Subject[];
@@ -16,23 +18,61 @@ interface SeedData {
 
 export function createSeedData(): SeedData {
   return {
+    oblyses: [
+      {
+        id: 'c7c1ef46-ec80-4a86-8467-b9366992c6d1',
+        nameKz: 'Абай облысы',
+        nameRu: 'Абайская область',
+        createdAt: '2025-05-29T12:05:00.000Z',
+      },
+      {
+        id: '519947ef-fc1d-43c8-a221-5e1ce0bd3c4d',
+        nameKz: 'Алматы қаласы',
+        nameRu: 'город Алматы',
+        createdAt: '2025-05-08T11:30:00.000Z',
+      },
+      {
+        id: '0da73070-2dcb-4d64-915f-68ce9df1af71',
+        nameKz: 'Ақмола облысы',
+        nameRu: 'Акмолинская область',
+        createdAt: '2025-07-01T12:20:00.000Z',
+      },
+    ],
     regions: [
       {
         id: '0fa8db4a-bd4c-48fb-aac7-4f8c6f9e17f7',
-        nameKz: 'Абай ауданы - Абай облысы',
-        nameRu: 'Абайский район - Абайская область',
+        oblysId: 'c7c1ef46-ec80-4a86-8467-b9366992c6d1',
+        oblysNameKz: 'Абай облысы',
+        oblysNameRu: 'Абайская область',
+        nameKz: 'Абай ауданы',
+        nameRu: 'Абайский район',
+        type: 'district',
+        labelKz: 'Абай облысы - Абай ауданы',
+        labelRu: 'Абайская область - Абайский район',
         createdAt: '2025-05-29T12:08:00.000Z',
       },
       {
         id: '724d1e47-a65b-4a7f-8798-1b67cb7d2d7d',
+        oblysId: '519947ef-fc1d-43c8-a221-5e1ce0bd3c4d',
+        oblysNameKz: 'Алматы қаласы',
+        oblysNameRu: 'город Алматы',
         nameKz: 'Алматы қаласы',
         nameRu: 'город Алматы',
+        type: 'city',
+        labelKz: 'Алматы қаласы - Алматы қаласы',
+        labelRu: 'город Алматы - город Алматы',
         createdAt: '2025-05-08T11:33:00.000Z',
       },
       {
         id: '8f4990f1-3bd0-45df-8d45-7691cf8d3751',
-        nameKz: 'Ақмола облысы - Ерейментау қаласы',
-        nameRu: 'Акмолинская область - город Ерейментау',
+        oblysId: '0da73070-2dcb-4d64-915f-68ce9df1af71',
+        oblysNameKz: 'Ақмола облысы',
+        oblysNameRu: 'Акмолинская область',
+        nameKz: 'Ерейментау қаласы',
+        nameRu: 'город Ерейментау',
+        type: 'city',
+        labelKz: 'Ақмола облысы - Ерейментау қаласы',
+        labelRu: 'Акмолинская область - город Ерейментау',
         createdAt: '2025-07-01T12:24:00.000Z',
       },
     ],

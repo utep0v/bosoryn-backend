@@ -7,7 +7,13 @@ import { VacancyEntity } from './entities/vacancy.entity';
 type SupportedLanguage = 'kz' | 'ru';
 
 function regionName(region: RegionEntity, lang: SupportedLanguage) {
-  return lang === 'ru' ? region.nameRu : region.nameKz;
+  const oblysName =
+    lang === 'ru'
+      ? (region.oblys?.nameRu ?? null)
+      : (region.oblys?.nameKz ?? null);
+  const childName = lang === 'ru' ? region.nameRu : region.nameKz;
+
+  return oblysName ? `${oblysName} - ${childName}` : childName;
 }
 
 function subjectName(subject: SubjectEntity, lang: SupportedLanguage) {
@@ -74,6 +80,7 @@ export function mapApplicationEntity(
     regionName: vacancyView.regionName,
     schoolId: vacancyView.schoolId,
     schoolName: vacancyView.schoolName,
+    destinationSchoolName: vacancyView.schoolName,
     schoolEmail: vacancyView.schoolEmail,
     schoolPhone: vacancyView.schoolPhone,
     subjectId: vacancyView.subjectId,

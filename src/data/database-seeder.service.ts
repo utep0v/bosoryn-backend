@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { createSeedData } from './seed-data';
 import { ApplicationEntity } from './entities/application.entity';
 import { RegionEntity } from './entities/region.entity';
+import { RegionOblysEntity } from './entities/region-oblys.entity';
 import { SchoolEntity } from './entities/school.entity';
 import { SubjectEntity } from './entities/subject.entity';
 import { VacancyEntity } from './entities/vacancy.entity';
@@ -11,6 +12,8 @@ import { VacancyEntity } from './entities/vacancy.entity';
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
   constructor(
+    @InjectRepository(RegionOblysEntity)
+    private readonly regionOblysesRepository: Repository<RegionOblysEntity>,
     @InjectRepository(RegionEntity)
     private readonly regionsRepository: Repository<RegionEntity>,
     @InjectRepository(SchoolEntity)
@@ -31,6 +34,15 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     }
 
     const seed = createSeedData();
+
+    await this.regionOblysesRepository.save(
+      seed.oblyses.map((oblys) =>
+        this.regionOblysesRepository.create({
+          ...oblys,
+          createdAt: new Date(oblys.createdAt),
+        }),
+      ),
+    );
 
     await this.regionsRepository.save(
       seed.regions.map((region) =>

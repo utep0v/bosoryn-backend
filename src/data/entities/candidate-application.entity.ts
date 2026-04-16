@@ -15,6 +15,9 @@ export class CandidateApplicationEntity {
   @Column()
   fullName: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  phone: string | null;
+
   @Column()
   specialty: string;
 
@@ -32,6 +35,33 @@ export class CandidateApplicationEntity {
 
   @Column({ type: 'text', nullable: true })
   audan: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  locationType: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile1OriginalName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile1StoredName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile1MimeType: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile1Path: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile2OriginalName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile2StoredName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile2MimeType: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  directionFile2Path: string | null;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

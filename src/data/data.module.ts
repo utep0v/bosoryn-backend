@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseSeederService } from './database-seeder.service';
 import { ApplicationEntity } from './entities/application.entity';
 import { RegionEntity } from './entities/region.entity';
+import { RegionOblysEntity } from './entities/region-oblys.entity';
 import { SchoolEntity } from './entities/school.entity';
 import { SubjectEntity } from './entities/subject.entity';
 import { VacancyEntity } from './entities/vacancy.entity';
@@ -63,6 +64,7 @@ import { VacancyEntity } from './entities/vacancy.entity';
     }),
     TypeOrmModule.forFeature([
       RegionEntity,
+      RegionOblysEntity,
       SchoolEntity,
       SubjectEntity,
       VacancyEntity,

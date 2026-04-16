@@ -1,11 +1,25 @@
 export type TeachingLanguage = 'kz' | 'ru';
 export type VacancyStatus = 'open' | 'closed';
 export type DeliveryStatus = 'pending' | 'sent' | 'failed' | 'skipped';
+export type RegionItemType = 'district' | 'city';
 
-export interface Region {
+export interface RegionOblys {
   id: string;
   nameKz: string;
   nameRu: string;
+  createdAt: string;
+}
+
+export interface Region {
+  id: string;
+  oblysId: string | null;
+  oblysNameKz: string | null;
+  oblysNameRu: string | null;
+  nameKz: string;
+  nameRu: string;
+  type: RegionItemType | null;
+  labelKz: string;
+  labelRu: string;
   createdAt: string;
 }
 
@@ -87,6 +101,7 @@ export interface ApplicationView {
   regionName: string;
   schoolId: string;
   schoolName: string;
+  destinationSchoolName: string;
   schoolEmail: string;
   schoolPhone: string;
   subjectId: string;
@@ -112,15 +127,19 @@ export interface CandidateApplicationView {
   educationLevel: string;
   locationId: string | null;
   oblys: string | null;
-  audan: string | null;
+  locationName: string | null;
+  locationType: RegionItemType | null;
   locationLabel: string | null;
+  referralDocumentUrl: string;
   createdAt: string;
 }
 
 export interface CandidateApplicationLocationView {
   id: string;
-  oblys: string;
-  audan: string;
+  oblysId: string | null;
+  oblys: string | null;
+  name: string;
+  type: RegionItemType;
   label: string;
   createdAt: string;
 }

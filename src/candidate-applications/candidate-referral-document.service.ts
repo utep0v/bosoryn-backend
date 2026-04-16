@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import JSZip from 'jszip';
-import { ApplicationView } from '../domain/models';
+import { CandidateApplicationView } from '../domain/models';
 
 const UNDERSCORE_OCCURRENCES = {
   topFullName: 0,
@@ -14,16 +14,14 @@ const UNDERSCORE_OCCURRENCES = {
 } as const;
 
 @Injectable()
-export class ReferralDocumentService {
-  async generate(application: ApplicationView) {
-    const templateBuffer = await this.loadTemplate(
-      application.teachingLanguage,
-    );
+export class CandidateReferralDocumentService {
+  async generate(application: CandidateApplicationView) {
+    const templateBuffer = await this.loadTemplate();
     const zip = await JSZip.loadAsync(templateBuffer);
     const documentXmlFile = zip.file('word/document.xml');
 
     if (!documentXmlFile) {
-      throw new NotFoundException('Referral template is invalid');
+      throw new NotFoundException('Candidate referral template is invalid');
     }
 
     const documentXml = await documentXmlFile.async('string');
@@ -42,27 +40,23 @@ export class ReferralDocumentService {
     };
   }
 
-  private async loadTemplate(
-    teachingLanguage: ApplicationView['teachingLanguage'],
-  ) {
+  private async loadTemplate() {
     const templatePath = resolve(
       process.cwd(),
-      teachingLanguage === 'kz'
-        ? (process.env.REFERRAL_TEMPLATE_KZ_PATH ??
-            'data/templates/referral-template-kz-2026.docx')
-        : (process.env.REFERRAL_TEMPLATE_RU_PATH ??
-            'data/templates/referral-template-ru-2026.docx'),
+      process.env.CANDIDATE_REFERRAL_TEMPLATE_PATH ??
+        process.env.REFERRAL_TEMPLATE_RU_PATH ??
+        'data/templates/referral-template-ru-2026.docx',
     );
 
     return readFile(templatePath);
   }
 
-  private fillTemplate(documentXml: string, application: ApplicationView) {
-    const specialty = this.limitText(application.subjectName, 70);
-    const addressContact = this.limitText(
-      `${application.regionName}, тел.: ${application.schoolPhone}`,
-      130,
-    );
+  private fillTemplate(
+    documentXml: string,
+    application: CandidateApplicationView,
+  ) {
+    const specialty = this.limitText(application.specialty, 70);
+    const addressContact = this.limitText(application.locationLabel ?? '', 130);
 
     const replacements = new Map<number, string>([
       [UNDERSCORE_OCCURRENCES.topFullName, application.fullName],
@@ -112,12 +106,12 @@ export class ReferralDocumentService {
 
   private createFileName(applicationId: string) {
     const safeId = applicationId.replace(/[^a-z0-9-]+/gi, '').toLowerCase();
-    return `referral-${safeId}.docx`;
+    return `candidate-referral-${safeId}.docx`;
   }
 
   private limitText(value: string, maxLength: number) {
     return value.length > maxLength
-      ? `${value.slice(0, maxLength - 1).trim()}…`
+      ? `${value.slice(0, maxLength - 1).trim()}...`
       : value;
   }
 }

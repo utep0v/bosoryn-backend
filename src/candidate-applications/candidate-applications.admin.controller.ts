@@ -26,6 +26,11 @@ export class CandidateApplicationsAdminController {
     return this.candidateApplicationsService.list();
   }
 
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.candidateApplicationsService.remove(requireUuid(id, 'id'));
+  }
+
   @Get('locations')
   listLocations() {
     return this.candidateApplicationsService.listLocations();
@@ -35,8 +40,9 @@ export class CandidateApplicationsAdminController {
   createLocation(
     @Body()
     body: {
-      oblys: string;
-      audan: string;
+      oblysId: string;
+      name: string;
+      type: 'district' | 'city';
     },
   ) {
     return this.candidateApplicationsService.createLocation(body);
@@ -47,8 +53,9 @@ export class CandidateApplicationsAdminController {
     @Param('id') id: string,
     @Body()
     body: {
-      oblys?: string;
-      audan?: string;
+      oblysId?: string;
+      name?: string;
+      type?: 'district' | 'city';
     },
   ) {
     return this.candidateApplicationsService.updateLocation(
@@ -78,5 +85,26 @@ export class CandidateApplicationsAdminController {
       `attachment; filename="candidate-applications-${timestamp}.xlsx"`,
     );
     response.send(Buffer.from(file));
+  }
+
+  @Get(':id/referral-document')
+  async downloadReferralDocument(
+    @Param('id') id: string,
+    @Res() response: Response,
+  ) {
+    const file =
+      await this.candidateApplicationsService.generateReferralDocument(
+        requireUuid(id, 'id'),
+      );
+
+    response.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    );
+    response.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${file.fileName}"`,
+    );
+    response.send(file.buffer);
   }
 }

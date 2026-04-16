@@ -165,7 +165,9 @@ export class ApplicationsService {
     const vacancy = await this.vacanciesRepository.findOne({
       where: { id: vacancyId },
       relations: {
-        region: true,
+        region: {
+          oblys: true,
+        },
         school: true,
         subject: true,
       },
@@ -214,7 +216,9 @@ export class ApplicationsService {
       where: { id: application.id },
       relations: {
         vacancy: {
-          region: true,
+          region: {
+            oblys: true,
+          },
           school: true,
           subject: true,
         },
@@ -281,6 +285,7 @@ export class ApplicationsService {
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.vacancy', 'vacancy')
       .leftJoinAndSelect('vacancy.region', 'region')
+      .leftJoinAndSelect('region.oblys', 'regionOblys')
       .leftJoinAndSelect('vacancy.school', 'school')
       .leftJoinAndSelect('vacancy.subject', 'subject')
       .orderBy('application.createdAt', 'DESC');
@@ -332,7 +337,9 @@ export class ApplicationsService {
       where: { id },
       relations: {
         vacancy: {
-          region: true,
+          region: {
+            oblys: true,
+          },
           school: true,
           subject: true,
         },

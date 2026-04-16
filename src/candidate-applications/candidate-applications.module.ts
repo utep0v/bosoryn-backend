@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CandidateApplicationLocationEntity } from '../data/entities/candidate-application-location.entity';
 import { CandidateApplicationEntity } from '../data/entities/candidate-application.entity';
+import { RegionOblysEntity } from '../data/entities/region-oblys.entity';
 import { CandidateApplicationsAdminController } from './candidate-applications.admin.controller';
+import { CandidateReferralDocumentService } from './candidate-referral-document.service';
 import { CandidateApplicationsPublicController } from './candidate-applications.public.controller';
 import { CandidateApplicationsService } from './candidate-applications.service';
 
@@ -11,13 +13,14 @@ import { CandidateApplicationsService } from './candidate-applications.service';
     TypeOrmModule.forFeature([
       CandidateApplicationEntity,
       CandidateApplicationLocationEntity,
+      RegionOblysEntity,
     ]),
   ],
   controllers: [
     CandidateApplicationsAdminController,
     CandidateApplicationsPublicController,
   ],
-  providers: [CandidateApplicationsService],
+  providers: [CandidateApplicationsService, CandidateReferralDocumentService],
   exports: [CandidateApplicationsService],
 })
 export class CandidateApplicationsModule {}

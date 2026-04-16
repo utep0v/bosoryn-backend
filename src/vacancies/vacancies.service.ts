@@ -79,6 +79,7 @@ export class VacanciesService {
     const query = this.vacanciesRepository
       .createQueryBuilder('vacancy')
       .leftJoinAndSelect('vacancy.region', 'region')
+      .leftJoinAndSelect('region.oblys', 'regionOblys')
       .leftJoinAndSelect('vacancy.school', 'school')
       .leftJoinAndSelect('vacancy.subject', 'subject')
       .orderBy('vacancy.createdAt', 'DESC');
@@ -134,7 +135,14 @@ export class VacanciesService {
 
   async getPublicFilters(lang: TeachingLanguage = 'ru') {
     const [regions, schools, subjects, rawYears] = await Promise.all([
-      this.regionsRepository.find({ order: { id: 'ASC' } }),
+      this.regionsRepository.find({
+        relations: {
+          oblys: true,
+        },
+        order: {
+          createdAt: 'ASC',
+        },
+      }),
       this.schoolsRepository.find({ order: { id: 'ASC' } }),
       this.subjectsRepository.find({ order: { id: 'ASC' } }),
       this.vacanciesRepository
@@ -155,7 +163,14 @@ export class VacanciesService {
     return {
       regions: regions.map((region) => ({
         id: region.id,
-        label: lang === 'ru' ? region.nameRu : region.nameKz,
+        label:
+          lang === 'ru'
+            ? region.oblys?.nameRu
+              ? `${region.oblys.nameRu} - ${region.nameRu}`
+              : region.nameRu
+            : region.oblys?.nameKz
+              ? `${region.oblys.nameKz} - ${region.nameKz}`
+              : region.nameKz,
       })),
       schools: schools.map((school) => ({
         id: school.id,
@@ -174,7 +189,9 @@ export class VacanciesService {
     const vacancy = await this.vacanciesRepository.findOne({
       where: { id },
       relations: {
-        region: true,
+        region: {
+          oblys: true,
+        },
         school: true,
         subject: true,
       },
@@ -311,7 +328,9 @@ export class VacanciesService {
     const vacancy = await this.vacanciesRepository.findOne({
       where: { id },
       relations: {
-        region: true,
+        region: {
+          oblys: true,
+        },
         school: true,
         subject: true,
       },
