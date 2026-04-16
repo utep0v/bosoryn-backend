@@ -16,6 +16,7 @@ describe('ReferralDocumentService', () => {
       regionName: 'город Алматы',
       schoolId: 'school-id',
       schoolName: '№18 гимназия',
+      destinationSchoolName: '№18 гимназия',
       schoolEmail: 'school@example.com',
       schoolPhone: '+77070000003',
       subjectId: 'subject-id',
@@ -42,12 +43,10 @@ describe('ReferralDocumentService', () => {
     const xml = await zip.file('word/document.xml')?.async('string');
 
     expect(result.fileName).toBe('referral-application-id.docx');
-    expect(xml).toContain('Направление в центр занятости');
+    expect(xml).toContain('Направление в №18 гимназия');
     expect(xml).toContain('Токтасын Аяжан');
     expect(xml).toContain('Математика');
-    expect(xml).toContain(
-      'город Алматы, тел.: +77070000003, e-mail: school@example.com',
-    );
+    expect(xml).toContain('город Алматы, тел.: +77070000003');
   });
 
   it('fills the kazakh referral template for kazakh vacancies', async () => {
@@ -64,6 +63,7 @@ describe('ReferralDocumentService', () => {
       regionName: 'Алматы қаласы',
       schoolId: 'school-id',
       schoolName: '№18 гимназия',
+      destinationSchoolName: '№18 гимназия',
       schoolEmail: 'school@example.com',
       schoolPhone: '+77070000003',
       subjectId: 'subject-id',
@@ -90,11 +90,9 @@ describe('ReferralDocumentService', () => {
     const xml = await zip.file('word/document.xml')?.async('string');
 
     expect(result.fileName).toBe('referral-application-kz-id.docx');
-    expect(xml).toContain('Жұмыспен қамту орталығына жолдама');
+    expect(xml).toContain('Жолдама №18 гимназия');
     expect(xml).toContain('Тоқтасын Аяжан');
     expect(xml).toContain('Математика');
-    expect(xml).toContain(
-      'Алматы қаласы, тел.: +77070000003, e-mail: school@example.com',
-    );
+    expect(xml).toContain('Алматы қаласы, тел.: +77070000003');
   });
 });

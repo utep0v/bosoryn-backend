@@ -4,6 +4,11 @@ import { resolve } from 'node:path';
 import JSZip from 'jszip';
 import { ApplicationView } from '../domain/models';
 
+const TEMPLATE_TITLES = {
+  ru: 'Направление в центр занятости',
+  kz: 'Жұмыспен қамту орталығына жолдама',
+} as const;
+
 const UNDERSCORE_OCCURRENCES = {
   topFullName: 0,
   topSpecialty: 1,
@@ -63,6 +68,7 @@ export class ReferralDocumentService {
       `${application.regionName}, тел.: ${application.schoolPhone}`,
       130,
     );
+    const documentTitle = this.createDocumentTitle(application);
 
     const replacements = new Map<number, string>([
       [UNDERSCORE_OCCURRENCES.topFullName, application.fullName],
@@ -75,7 +81,7 @@ export class ReferralDocumentService {
 
     let underscoreIndex = -1;
 
-    return documentXml.replace(
+    return this.replaceDocumentTitle(documentXml, application, documentTitle).replace(
       /(<w:t[^>]*>)([^<]*_[^<]*)(<\/w:t>)/g,
       (_, openTag: string, textContent: string, closeTag: string) => {
         underscoreIndex += 1;
@@ -87,6 +93,30 @@ export class ReferralDocumentService {
         return `${openTag}${this.replaceUnderscorePlaceholder(textContent, replacements.get(underscoreIndex) ?? '')}${closeTag}`;
       },
     );
+  }
+
+  private createDocumentTitle(application: ApplicationView) {
+    const schoolName = this.limitText(
+      application.destinationSchoolName || application.schoolName,
+      120,
+    );
+
+    return application.teachingLanguage === 'kz'
+      ? `Жолдама ${schoolName}`
+      : `Направление в ${schoolName}`;
+  }
+
+  private replaceDocumentTitle(
+    documentXml: string,
+    application: ApplicationView,
+    documentTitle: string,
+  ) {
+    const templateTitle =
+      application.teachingLanguage === 'kz'
+        ? TEMPLATE_TITLES.kz
+        : TEMPLATE_TITLES.ru;
+
+    return documentXml.replace(templateTitle, this.escapeXml(documentTitle));
   }
 
   private replaceUnderscorePlaceholder(textContent: string, value: string) {
