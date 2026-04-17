@@ -6,7 +6,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import ExcelJS from 'exceljs';
 import { Repository } from 'typeorm';
-import { requireIin, requireText, requireUuid } from '../common/validation';
+import {
+  requireIin,
+  requireText,
+  requireUuid,
+  toOptionalText,
+} from '../common/validation';
 import { RegionItemType } from '../domain/models';
 import { CandidateApplicationLocationEntity } from '../data/entities/candidate-application-location.entity';
 import { CandidateApplicationEntity } from '../data/entities/candidate-application.entity';
@@ -27,13 +32,21 @@ interface CreateCandidateApplicationDto {
 
 interface SaveCandidateApplicationLocationDto {
   oblysId: string;
-  name: string;
+  name?: string;
+  nameKz?: string;
+  nameRu?: string;
   type: RegionItemType;
 }
 
 interface UniqueCandidateApplicationLocationCheck {
   oblysId: string;
-  name: string;
+  legacyName: string;
+}
+
+interface ResolvedLocationNames {
+  nameKz: string;
+  nameRu: string;
+  legacyName: string;
 }
 
 function normalizeLocationType(value: unknown, fieldName = 'type') {
@@ -117,13 +130,15 @@ export class CandidateApplicationsService {
 
     const items = locations
       .map((location) => this.toLocationView(location))
-      .sort((left, right) => left.label.localeCompare(right.label, 'ru'));
+      .sort((left, right) => left.labelRu.localeCompare(right.labelRu, 'ru'));
 
     const treeMap = new Map<
       string,
       {
         oblysId: string | null;
         oblys: string | null;
+        oblysNameKz: string | null;
+        oblysNameRu: string | null;
         locations: CandidateApplicationLocationView[];
       }
     >();
@@ -136,6 +151,8 @@ export class CandidateApplicationsService {
         node = {
           oblysId: item.oblysId,
           oblys: item.oblys,
+          oblysNameKz: item.oblysNameKz,
+          oblysNameRu: item.oblysNameRu,
           locations: [],
         };
         treeMap.set(key, node);
@@ -162,15 +179,20 @@ export class CandidateApplicationsService {
       throw new NotFoundException(`Oblys ${oblysId} was not found`);
     }
 
-    const name = requireText(payload.name, 'name');
+    const names = this.resolveLocationNames(payload);
 
-    await this.assertLocationIsUnique({ oblysId, name });
+    await this.assertLocationIsUnique({
+      oblysId,
+      legacyName: names.legacyName,
+    });
 
     const location = await this.candidateApplicationLocationsRepository.save(
       this.candidateApplicationLocationsRepository.create({
         oblysId,
         oblys: oblys.nameRu,
-        audan: name,
+        audan: names.legacyName,
+        nameKz: names.nameKz,
+        nameRu: names.nameRu,
         type: normalizeLocationType(payload.type),
       }),
     );
@@ -215,8 +237,18 @@ export class CandidateApplicationsService {
       location.oblysRef = oblys;
     }
 
-    if (payload.name !== undefined) {
-      location.audan = requireText(payload.name, 'name');
+    if (
+      payload.name !== undefined ||
+      payload.nameKz !== undefined ||
+      payload.nameRu !== undefined
+    ) {
+      const names = this.resolveLocationNames(payload, {
+        nameKz: location.nameKz ?? location.audan ?? undefined,
+        nameRu: location.nameRu ?? location.audan ?? undefined,
+      });
+      location.audan = names.legacyName;
+      location.nameKz = names.nameKz;
+      location.nameRu = names.nameRu;
     }
 
     if (payload.type !== undefined) {
@@ -226,7 +258,7 @@ export class CandidateApplicationsService {
     await this.assertLocationIsUnique(
       {
         oblysId: location.oblysId ?? '',
-        name: location.audan ?? '',
+        legacyName: location.audan ?? location.nameRu ?? '',
       },
       id,
     );
@@ -343,21 +375,54 @@ export class CandidateApplicationsService {
   private toLocationView(
     location: CandidateApplicationLocationEntity,
   ): CandidateApplicationLocationView {
+    const oblysNameKz = location.oblysRef?.nameKz ?? null;
+    const oblysNameRu = location.oblysRef?.nameRu ?? location.oblys ?? null;
+    const nameKz = location.nameKz ?? location.audan ?? '';
+    const nameRu = location.nameRu ?? location.audan ?? '';
+
     return {
       id: location.id,
       oblysId: location.oblysId,
-      oblys: location.oblysRef?.nameRu ?? location.oblys ?? null,
-      name: location.audan ?? '',
+      oblys: oblysNameRu,
+      oblysNameKz,
+      oblysNameRu,
+      name: nameRu || nameKz,
+      nameKz,
+      nameRu,
       type: ((location.type as RegionItemType | null) ??
         'district') as RegionItemType,
-      label:
-        this.formatLocationLabel(
-          location.oblysRef?.nameRu ?? location.oblys ?? null,
-          location.audan,
-        ) ??
-        location.audan ??
-        '',
+      label: this.formatLocationLabel(oblysNameRu, nameRu) ?? nameRu ?? nameKz,
+      labelKz:
+        this.formatLocationLabel(oblysNameKz, nameKz) ?? nameKz ?? nameRu,
+      labelRu:
+        this.formatLocationLabel(oblysNameRu, nameRu) ?? nameRu ?? nameKz,
       createdAt: location.createdAt.toISOString(),
+    };
+  }
+
+  private resolveLocationNames(
+    payload: Partial<SaveCandidateApplicationLocationDto>,
+    fallback?: Partial<ResolvedLocationNames>,
+  ): ResolvedLocationNames {
+    const fallbackNameKz =
+      fallback?.nameKz ??
+      fallback?.legacyName ??
+      fallback?.nameRu ??
+      undefined;
+    const fallbackNameRu =
+      fallback?.nameRu ??
+      fallback?.legacyName ??
+      fallback?.nameKz ??
+      undefined;
+
+    const name = toOptionalText(payload.name);
+    const nameKz = toOptionalText(payload.nameKz) ?? name ?? fallbackNameKz;
+    const nameRu = toOptionalText(payload.nameRu) ?? name ?? fallbackNameRu;
+
+    return {
+      nameKz: requireText(nameKz, 'nameKz'),
+      nameRu: requireText(nameRu, 'nameRu'),
+      legacyName: requireText(nameRu ?? nameKz, 'nameRu'),
     };
   }
 
@@ -389,7 +454,7 @@ export class CandidateApplicationsService {
       {
         where: {
           oblysId: payload.oblysId,
-          audan: payload.name,
+          audan: payload.legacyName,
         },
       },
     );

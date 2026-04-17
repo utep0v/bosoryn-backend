@@ -138,8 +138,14 @@ export interface CandidateApplicationLocationView {
   id: string;
   oblysId: string | null;
   oblys: string | null;
+  oblysNameKz: string | null;
+  oblysNameRu: string | null;
   name: string;
+  nameKz: string;
+  nameRu: string;
   type: RegionItemType;
   label: string;
+  labelKz: string;
+  labelRu: string;
   createdAt: string;
 }

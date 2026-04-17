@@ -41,7 +41,9 @@ export class CandidateApplicationsAdminController {
     @Body()
     body: {
       oblysId: string;
-      name: string;
+      name?: string;
+      nameKz?: string;
+      nameRu?: string;
       type: 'district' | 'city';
     },
   ) {
@@ -55,6 +57,8 @@ export class CandidateApplicationsAdminController {
     body: {
       oblysId?: string;
       name?: string;
+      nameKz?: string;
+      nameRu?: string;
       type?: 'district' | 'city';
     },
   ) {

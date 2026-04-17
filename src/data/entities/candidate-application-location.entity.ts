@@ -27,6 +27,12 @@ export class CandidateApplicationLocationEntity {
   @Column({ type: 'text', nullable: true })
   audan: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  nameKz: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  nameRu: string | null;
+
   @Column({ type: 'varchar', nullable: true, default: 'district' })
   type: string | null;
 

@@ -492,7 +492,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"name\": \"Аягөз ауданы\",\n  \"type\": \"district\"\n}"
+              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"nameKz\": \"Аягөз ауданы\",\n  \"nameRu\": \"Аягозский район\",\n  \"type\": \"district\"\n}"
             },
             "url": "{{baseUrl}}/candidate-applications/locations"
           }
@@ -507,7 +507,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"name\": \"Аягөз қаласы\",\n  \"type\": \"city\"\n}"
+              "raw": "{\n  \"oblysId\": \"{{region_oblys_id}}\",\n  \"nameKz\": \"Аягөз қаласы\",\n  \"nameRu\": \"город Аягоз\",\n  \"type\": \"city\"\n}"
             },
             "url": "{{baseUrl}}/candidate-applications/locations/{{candidate_location_id}}"
           }
