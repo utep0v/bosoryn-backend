@@ -16,15 +16,18 @@ import { RegionItemType } from '../domain/models';
 import { CandidateApplicationLocationEntity } from '../data/entities/candidate-application-location.entity';
 import { CandidateApplicationEntity } from '../data/entities/candidate-application.entity';
 import { RegionOblysEntity } from '../data/entities/region-oblys.entity';
+import { SubjectEntity } from '../data/entities/subject.entity';
 import {
   CandidateApplicationLocationView,
   CandidateApplicationView,
+  Subject,
 } from '../domain/models';
 import { CandidateReferralDocumentService } from './candidate-referral-document.service';
 
 interface CreateCandidateApplicationDto {
   fullName: string;
-  specialty: string;
+  specialty?: string;
+  specialtyId?: string;
   iin: string;
   educationLevel: string;
   locationId: string;
@@ -68,6 +71,8 @@ export class CandidateApplicationsService {
     private readonly candidateApplicationLocationsRepository: Repository<CandidateApplicationLocationEntity>,
     @InjectRepository(RegionOblysEntity)
     private readonly regionOblysesRepository: Repository<RegionOblysEntity>,
+    @InjectRepository(SubjectEntity)
+    private readonly subjectsRepository: Repository<SubjectEntity>,
     private readonly candidateReferralDocumentService: CandidateReferralDocumentService,
   ) {}
 
@@ -118,8 +123,12 @@ export class CandidateApplicationsService {
     return workbook.xlsx.writeBuffer();
   }
 
-  async listLocations() {
+  async listLocations(oblysId?: string) {
+    const normalizedOblysId = oblysId
+      ? requireUuid(oblysId, 'oblysId')
+      : undefined;
     const locations = await this.candidateApplicationLocationsRepository.find({
+      where: normalizedOblysId ? { oblysId: normalizedOblysId } : undefined,
       relations: {
         oblysRef: true,
       },
@@ -167,8 +176,27 @@ export class CandidateApplicationsService {
     };
   }
 
-  getPublicLocationOptions() {
-    return this.listLocations();
+  async listSpecialties(): Promise<Subject[]> {
+    const subjects = await this.subjectsRepository.find({
+      order: {
+        nameRu: 'ASC',
+      },
+    });
+
+    return subjects.map((subject) => ({
+      id: subject.id,
+      nameKz: subject.nameKz,
+      nameRu: subject.nameRu,
+      createdAt: subject.createdAt.toISOString(),
+    }));
+  }
+
+  getPublicLocationOptions(oblysId?: string) {
+    return this.listLocations(oblysId);
+  }
+
+  getPublicSpecialtyOptions() {
+    return this.listSpecialties();
   }
 
   async createLocation(payload: SaveCandidateApplicationLocationDto) {
@@ -291,6 +319,7 @@ export class CandidateApplicationsService {
 
   async createPublic(payload: CreateCandidateApplicationDto) {
     const locationId = requireUuid(payload.locationId, 'locationId');
+    const specialtyId = toOptionalText(payload.specialtyId);
     const location = await this.candidateApplicationLocationsRepository.findOne(
       {
         where: { id: locationId },
@@ -306,10 +335,24 @@ export class CandidateApplicationsService {
       );
     }
 
+    let specialty = toOptionalText(payload.specialty);
+
+    if (specialtyId) {
+      const subject = await this.subjectsRepository.findOneBy({
+        id: requireUuid(specialtyId, 'specialtyId'),
+      });
+
+      if (!subject) {
+        throw new NotFoundException(`Subject ${specialtyId} was not found`);
+      }
+
+      specialty = subject.nameRu;
+    }
+
     const application = await this.candidateApplicationsRepository.save(
       this.candidateApplicationsRepository.create({
         fullName: requireText(payload.fullName, 'fullName'),
-        specialty: requireText(payload.specialty, 'specialty'),
+        specialty: requireText(specialty, 'specialty'),
         iin: requireIin(payload.iin),
         educationLevel: requireText(payload.educationLevel, 'educationLevel'),
         locationId: location.id,
@@ -336,7 +379,7 @@ export class CandidateApplicationsService {
     return this.toView(application);
   }
 
-  async generateReferralDocument(id: string) {
+  async generateReferralDocument(id: string, language?: string) {
     const application = await this.candidateApplicationsRepository.findOneBy({
       id,
     });
@@ -347,6 +390,7 @@ export class CandidateApplicationsService {
 
     return this.candidateReferralDocumentService.generate(
       this.toView(application),
+      language,
     );
   }
 

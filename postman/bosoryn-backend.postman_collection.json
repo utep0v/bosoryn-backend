@@ -483,6 +483,16 @@
           }
         },
         {
+          "name": "List Candidate Application Locations By Oblys",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications/locations?oblysId={{region_oblys_id}}"
+          }
+        },
+        {
           "name": "Create Candidate Application Location",
           "request": {
             "method": "POST",
@@ -523,13 +533,23 @@
           }
         },
         {
-          "name": "Download Candidate Referral Document",
+          "name": "Download Candidate Referral Document RU",
           "request": {
             "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{admin_token}}" }
             ],
-            "url": "{{baseUrl}}/candidate-applications/{{candidate_application_id}}/referral-document"
+            "url": "{{baseUrl}}/candidate-applications/{{candidate_application_id}}/referral-document?lang=ru"
+          }
+        },
+        {
+          "name": "Download Candidate Referral Document KZ",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{baseUrl}}/candidate-applications/{{candidate_application_id}}/referral-document?lang=kz"
           }
         },
         {
@@ -624,10 +644,24 @@
           }
         },
         {
+          "name": "Public Candidate Application Specialties",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/candidate-applications/specialties"
+          }
+        },
+        {
           "name": "Public Candidate Application Locations",
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/public/candidate-applications/locations"
+          }
+        },
+        {
+          "name": "Public Candidate Application Locations By Oblys",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/candidate-applications/locations?oblysId={{region_oblys_id}}"
           }
         },
         {
@@ -636,7 +670,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Тестовый кандидат\",\n  \"specialty\": \"Математика\",\n  \"iin\": \"030101500111\",\n  \"educationLevel\": \"Высшее\",\n  \"locationId\": \"{{candidate_location_id}}\"\n}",
+              "raw": "{\n  \"fullName\": \"Тестовый кандидат\",\n  \"specialtyId\": \"{{subject_id}}\",\n  \"iin\": \"030101500111\",\n  \"educationLevel\": \"Высшее\",\n  \"locationId\": \"{{candidate_location_id}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -648,10 +682,17 @@
           }
         },
         {
-          "name": "Public Candidate Referral Document",
+          "name": "Public Candidate Referral Document RU",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/public/candidate-applications/{{candidate_application_id}}/referral-document"
+            "url": "{{baseUrl}}/public/candidate-applications/{{candidate_application_id}}/referral-document?lang=ru"
+          }
+        },
+        {
+          "name": "Public Candidate Referral Document KZ",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/candidate-applications/{{candidate_application_id}}/referral-document?lang=kz"
           }
         }
       ]

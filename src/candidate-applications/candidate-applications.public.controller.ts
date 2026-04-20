@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { requireUuid } from '../common/validation';
+import { requireUuid, toOptionalText } from '../common/validation';
 import { CandidateApplicationsService } from './candidate-applications.service';
 
 @Controller('public/candidate-applications')
@@ -10,8 +10,15 @@ export class CandidateApplicationsPublicController {
   ) {}
 
   @Get('locations')
-  listLocations() {
-    return this.candidateApplicationsService.getPublicLocationOptions();
+  listLocations(@Query('oblysId') oblysId?: string) {
+    return this.candidateApplicationsService.getPublicLocationOptions(
+      toOptionalText(oblysId),
+    );
+  }
+
+  @Get('specialties')
+  listSpecialties() {
+    return this.candidateApplicationsService.getPublicSpecialtyOptions();
   }
 
   @Post()
@@ -19,7 +26,8 @@ export class CandidateApplicationsPublicController {
     @Body()
     body: {
       fullName: string;
-      specialty: string;
+      specialty?: string;
+      specialtyId?: string;
       iin: string;
       educationLevel: string;
       locationId: string;
@@ -31,11 +39,13 @@ export class CandidateApplicationsPublicController {
   @Get(':id/referral-document')
   async downloadReferralDocument(
     @Param('id') id: string,
+    @Query('lang') lang: string | undefined,
     @Res() response: Response,
   ) {
     const file =
       await this.candidateApplicationsService.generateReferralDocument(
         requireUuid(id, 'id'),
+        toOptionalText(lang),
       );
 
     response.setHeader(

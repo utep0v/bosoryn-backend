@@ -6,12 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { AdminAuthGuard } from '../auth/admin-auth.guard';
-import { requireUuid } from '../common/validation';
+import { requireUuid, toOptionalText } from '../common/validation';
 import { CandidateApplicationsService } from './candidate-applications.service';
 
 @Controller('candidate-applications')
@@ -32,8 +33,10 @@ export class CandidateApplicationsAdminController {
   }
 
   @Get('locations')
-  listLocations() {
-    return this.candidateApplicationsService.listLocations();
+  listLocations(@Query('oblysId') oblysId?: string) {
+    return this.candidateApplicationsService.listLocations(
+      toOptionalText(oblysId),
+    );
   }
 
   @Post('locations')
@@ -94,11 +97,13 @@ export class CandidateApplicationsAdminController {
   @Get(':id/referral-document')
   async downloadReferralDocument(
     @Param('id') id: string,
+    @Query('lang') lang: string | undefined,
     @Res() response: Response,
   ) {
     const file =
       await this.candidateApplicationsService.generateReferralDocument(
         requireUuid(id, 'id'),
+        toOptionalText(lang),
       );
 
     response.setHeader(

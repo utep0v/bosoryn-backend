@@ -43,10 +43,14 @@ describe('ReferralDocumentService', () => {
     const xml = await zip.file('word/document.xml')?.async('string');
 
     expect(result.fileName).toBe('referral-application-id.docx');
-    expect(xml).toContain('Направление в №18 гимназия');
+    expect(xml).toContain('Направление на работу');
     expect(xml).toContain('Токтасын Аяжан');
     expect(xml).toContain('Математика');
+    expect(xml).toContain('учителя математики, ');
+    expect(xml).toContain('№18 гимназия');
     expect(xml).toContain('город Алматы, тел.: +77070000003');
+    expect(xml).not.toContain('Серикова Жұлдыз Азатқызы');
+    expect(xml).not.toContain('EE0000');
   });
 
   it('fills the kazakh referral template for kazakh vacancies', async () => {
@@ -90,9 +94,16 @@ describe('ReferralDocumentService', () => {
     const xml = await zip.file('word/document.xml')?.async('string');
 
     expect(result.fileName).toBe('referral-application-kz-id.docx');
-    expect(xml).toContain('Жолдама №18 гимназия');
+    expect(xml).toContain('Жұмысқа жолдама №');
     expect(xml).toContain('Тоқтасын Аяжан');
     expect(xml).toContain('Математика');
-    expect(xml).toContain('Алматы қаласы, тел.: +77070000003');
+    expect(xml).toContain('Алматы қаласы, байланыс телефоны: +77070000003');
+    expect(xml).toContain('№18 гимназия');
+    expect(xml).toContain('ға');
+    expect(xml).toContain('Математика');
+    expect(xml).toContain('пәнінің ');
+    expect(xml).toContain('мұғалімі');
+    expect(xml).not.toContain('Серикова Жұлдыз Азатқызы');
+    expect(xml).not.toContain('EE0000');
   });
 });
