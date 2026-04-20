@@ -128,7 +128,7 @@ export class CandidateReferralDocumentService {
 
   private normalizeLanguage(value?: string): CandidateReferralLanguage {
     if (!value) {
-      return 'ru';
+      return 'kz';
     }
 
     if (value === 'ru' || value === 'kz') {
