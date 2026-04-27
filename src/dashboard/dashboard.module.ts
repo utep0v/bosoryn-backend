@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplicationEntity } from '../data/entities/application.entity';
+import { CandidateApplicationEntity } from '../data/entities/candidate-application.entity';
 import { RegionEntity } from '../data/entities/region.entity';
 import { SchoolEntity } from '../data/entities/school.entity';
 import { VacancyEntity } from '../data/entities/vacancy.entity';
@@ -14,6 +15,7 @@ import { DashboardService } from './dashboard.service';
       SchoolEntity,
       VacancyEntity,
       ApplicationEntity,
+      CandidateApplicationEntity,
     ]),
   ],
   controllers: [DashboardController],

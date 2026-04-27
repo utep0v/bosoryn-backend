@@ -94,23 +94,63 @@
       "item": [
         {
           "name": "Get Dashboard",
+          "description": "Admin dashboard summary. `counts.candidateApplications` shows total candidate application questionnaires.",
           "request": {
             "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{admin_token}}" }
             ],
             "url": "{{baseUrl}}/dashboard"
-          }
+          },
+          "response": [
+            {
+              "name": "Dashboard summary",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": "{{baseUrl}}/dashboard"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"counts\": {\n    \"regions\": 10,\n    \"schools\": 25,\n    \"vacancies\": 40,\n    \"applications\": 120,\n    \"candidateApplications\": 35\n  },\n  \"recentApplications\": []\n}"
+            }
+          ]
         },
         {
           "name": "Get Dashboard Analytics",
+          "description": "Admin analytics. Application statistics are based on vacancy applications; `vacanciesBySubject` shows currently open vacancies by specialty, and `candidateApplications` groups candidate questionnaire statistics.",
           "request": {
             "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{admin_token}}" }
             ],
             "url": "{{baseUrl}}/dashboard/analytics"
-          }
+          },
+          "response": [
+            {
+              "name": "Dashboard analytics",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+                ],
+                "url": "{{baseUrl}}/dashboard/analytics"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"totalApplications\": 120,\n  \"totalOpenVacancies\": 18,\n  \"byRegion\": [\n    {\n      \"id\": \"{{region_id}}\",\n      \"label\": \"Абайская область\",\n      \"applicationsCount\": 42\n    }\n  ],\n  \"bySubject\": [\n    {\n      \"id\": \"{{subject_id}}\",\n      \"label\": \"Математика\",\n      \"applicationsCount\": 30\n    }\n  ],\n  \"vacanciesBySubject\": [\n    {\n      \"id\": \"{{subject_id}}\",\n      \"label\": \"Математика\",\n      \"vacanciesCount\": 7\n    }\n  ],\n  \"byGraduationYear\": [\n    {\n      \"year\": 2026,\n      \"applicationsCount\": 55\n    }\n  ],\n  \"topSchools\": [\n    {\n      \"id\": \"{{school_id}}\",\n      \"label\": \"Школа-лицей №1\",\n      \"applicationsCount\": 18\n    }\n  ],\n  \"candidateApplications\": {\n    \"totalApplications\": 35,\n    \"bySpecialty\": [\n      {\n        \"label\": \"Математика\",\n        \"applicationsCount\": 12\n      }\n    ],\n    \"byEducationLevel\": [\n      {\n        \"label\": \"Бакалавр\",\n        \"applicationsCount\": 20\n      }\n    ],\n    \"byOblys\": [\n      {\n        \"label\": \"Абайская область\",\n        \"applicationsCount\": 15\n      }\n    ],\n    \"byLocation\": [\n      {\n        \"id\": \"{{candidate_location_id}}\",\n        \"oblys\": \"Абайская область\",\n        \"locationName\": \"Аягозский район\",\n        \"label\": \"Абайская область - Аягозский район\",\n        \"applicationsCount\": 8\n      }\n    ]\n  }\n}"
+            }
+          ]
         }
       ]
     },
